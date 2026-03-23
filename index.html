@@ -220,9 +220,7 @@
             font-size: 18px;
             vertical-align: middle;
         }
-        .btn-add:hover {
-            background-color: #45a049;
-        }
+        .btn-add:hover { background-color: #45a049; }
         .category-row td {
             background-color: #e9ecef;
             border-bottom: 1px solid #aaa !important;
@@ -273,9 +271,7 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        .btn-save:hover {
-            background-color: #1a252f;
-        }
+        .btn-save:hover { background-color: #1a252f; }
         
         /* Bảng bên trong Modal */
         .modal-table {
@@ -318,6 +314,33 @@
             font-weight: bold;
         }
         .btn-remove-row:hover { background-color: #e60000; }
+        
+        .btn-sample {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .btn-sample:hover { background-color: #2980b9; }
+
+        .btn-select {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 5px;
+            font-family: inherit;
+        }
+        .btn-select:hover { background-color: #2ecc71; }
     </style>
 </head>
 <body>
@@ -590,7 +613,7 @@
 <div id="modal-expense" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeExpenseModal()">&times;</span>
-        <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Thêm chi phí</h2>
+        <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Điều chỉnh chi phí</h2>
         
         <table class="modal-table">
             <thead>
@@ -609,7 +632,32 @@
         </table>
         
         <button type="button" class="btn-add-row" onclick="addModalRow()">+ Thêm dòng</button>
+        <button type="button" class="btn-sample" onclick="openSampleModal()">Thêm chi tiêu mẫu</button>
         <button id="btn-save-expense" class="btn-save">Hoàn thành</button>
+    </div>
+</div>
+
+<div id="modal-sample" class="modal" style="z-index: 30;">
+    <div class="modal-content">
+        <span class="close" onclick="closeSampleModal()">&times;</span>
+        <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Chi Tiêu Mẫu</h2>
+        
+        <table class="modal-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">STT</th>
+                    <th style="width: 30%;">Nội dung chi</th>
+                    <th style="width: 30%;">Đối tượng chi</th>
+                    <th style="width: 20%;">Giá tiền (VNĐ)</th>
+                    <th style="width: 15%;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="modal-sample-tbody">
+                </tbody>
+        </table>
+        
+        <button type="button" class="btn-add-row" onclick="addSampleRow()">+ Thêm mẫu</button>
+        <button type="button" class="btn-save" onclick="saveAndCloseSampleModal()">Lưu & Đóng</button>
     </div>
 </div>
 
@@ -625,6 +673,8 @@
             expenseData[d][c] = []; 
         });
     });
+
+    let sampleExpenses = []; // Dữ liệu chi tiêu mẫu lưu trữ toàn cục
 
     let currentDay = '';
     let currentCat = '';
@@ -765,7 +815,7 @@
         }
     }
 
-    // --- MODAL DẠNG BẢNG (THÊM / SỬA CHI PHÍ) ---
+    // --- MODAL CHI PHÍ CHÍNH ---
     function openExpenseModal(day, cat, titleName) {
         currentDay = day;
         currentCat = cat;
@@ -776,7 +826,7 @@
         
         let data = expenseData[day][cat];
         if (data.length === 0) {
-            addModalRow(); // Thêm 1 dòng trống mặc định
+            addModalRow(); 
         } else {
             data.forEach(item => addModalRow(item));
         }
@@ -796,14 +846,13 @@
             <td class="stt-cell"></td>
             <td><input type="text" class="inp-nd" value="${item.nd}" placeholder="Nội dung"></td>
             <td><input type="text" class="inp-dt" value="${item.dt}" placeholder="Đối tượng"></td>
-            <td><input type="text" class="inp-gia" value="${item.gia}" placeholder="Trống hoặc điền"></td>
+            <td><input type="text" class="inp-gia" value="${item.gia}" placeholder="Bắt buộc điền"></td>
             <td><input type="number" class="inp-sl" value="${item.sl}" min="1"></td>
             <td class="cell-thanh-tien" style="font-weight:bold;">${formatVND(item.total)}</td>
             <td><button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button></td>
         `;
         tbody.appendChild(tr);
         
-        // Gắn sự kiện tính toán tự động
         let inpGia = tr.querySelector('.inp-gia');
         let inpSl = tr.querySelector('.inp-sl');
         
@@ -842,23 +891,114 @@
         tr.setAttribute('data-total', total);
     }
 
-    // --- LƯU & RENDER LẠI BẢNG ---
+    // --- MODAL CHI TIÊU MẪU ---
+    function openSampleModal() {
+        let tbody = document.getElementById('modal-sample-tbody');
+        tbody.innerHTML = '';
+        if(sampleExpenses.length === 0) {
+            addSampleRow();
+        } else {
+            sampleExpenses.forEach(item => addSampleRow(item));
+        }
+        document.getElementById('modal-sample').style.display = 'block';
+    }
+
+    function closeSampleModal() {
+        document.getElementById('modal-sample').style.display = 'none';
+    }
+
+    function addSampleRow(item = {nd:'', dt:'', gia:''}) {
+        let tbody = document.getElementById('modal-sample-tbody');
+        let tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+            <td class="stt-cell-sample"></td>
+            <td><input type="text" class="inp-samp-nd" value="${item.nd}" placeholder="Nội dung"></td>
+            <td><input type="text" class="inp-samp-dt" value="${item.dt}" placeholder="Đối tượng"></td>
+            <td><input type="text" class="inp-samp-gia" value="${item.gia}" placeholder="Trống hoặc điền"></td>
+            <td>
+                <button type="button" class="btn-select" onclick="selectSample(this)">Chọn</button>
+                <button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">X</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        tr.querySelector('.inp-samp-gia').addEventListener('input', function() {
+            dinhDangDauPhay(this);
+        });
+
+        updateSampleSTT();
+    }
+
+    function removeSampleRow(btn) {
+        btn.closest('tr').remove();
+        updateSampleSTT();
+    }
+
+    function updateSampleSTT() {
+        let rows = document.querySelectorAll('#modal-sample-tbody tr');
+        rows.forEach((row, index) => {
+            row.querySelector('.stt-cell-sample').innerText = index + 1;
+        });
+    }
+
+    function saveAndCloseSampleModal() {
+        let rows = document.querySelectorAll('#modal-sample-tbody tr');
+        let newData = [];
+        rows.forEach(row => {
+            let nd = row.querySelector('.inp-samp-nd').value.trim();
+            let dt = row.querySelector('.inp-samp-dt').value.trim();
+            let gia = row.querySelector('.inp-samp-gia').value.trim();
+            
+            if (nd || dt || gia) {
+                newData.push({ nd, dt, gia });
+            }
+        });
+        sampleExpenses = newData;
+        closeSampleModal();
+    }
+
+    function selectSample(btn) {
+        let tr = btn.closest('tr');
+        let nd = tr.querySelector('.inp-samp-nd').value.trim();
+        let dt = tr.querySelector('.inp-samp-dt').value.trim();
+        let giaStr = tr.querySelector('.inp-samp-gia').value.trim();
+        let giaNum = parseFloat(giaStr.replace(/,/g, '')) || 0;
+        
+        // Đưa dữ liệu mẫu vào Bảng Chi Phí Chính
+        addModalRow({ nd: nd, dt: dt, gia: giaStr, sl: 1, total: giaNum });
+    }
+
+    // --- LƯU BẢNG ĐIỀU CHỈNH & KIỂM TRA GIÁ TRỊ > 0 ---
     document.getElementById('btn-save-expense').addEventListener('click', function() {
         let rows = document.querySelectorAll('#modal-expense-tbody tr');
         let newData = [];
+        let hasError = false;
         
         rows.forEach(row => {
             let nd = row.querySelector('.inp-nd').value.trim();
             let dt = row.querySelector('.inp-dt').value.trim();
-            let gia = row.querySelector('.inp-gia').value.trim();
-            let sl = row.querySelector('.inp-sl').value;
-            let total = parseFloat(row.getAttribute('data-total')) || 0;
+            let giaStr = row.querySelector('.inp-gia').value.trim();
+            let gia = parseFloat(giaStr.replace(/,/g, '')) || 0;
+            let sl = parseFloat(row.querySelector('.inp-sl').value) || 1;
+            let total = gia * sl;
             
-            // Chỉ lưu những dòng có nhập dữ liệu (nội dung, đối tượng hoặc giá)
-            if (nd || dt || gia) {
-                newData.push({ nd, dt, gia, sl, total });
+            // Nếu có điền bất kỳ nội dung, đối tượng hoặc giá nào
+            if (nd || dt || giaStr) {
+                if (gia <= 0) {
+                    row.querySelector('.inp-gia').style.borderColor = 'red';
+                    hasError = true;
+                } else {
+                    row.querySelector('.inp-gia').style.borderColor = '#ddd';
+                    newData.push({ nd, dt, gia: giaStr, sl, total });
+                }
             }
         });
+        
+        if (hasError) {
+            alert("Giá tiền ở bảng điều chỉnh thu chi bắt buộc phải lớn hơn 0!");
+            return;
+        }
         
         // Cập nhật Database
         expenseData[currentDay][currentCat] = newData;
@@ -872,7 +1012,7 @@
 
     function renderMainCategory(day, cat) {
         let tbody = document.getElementById(`group-${day}-${cat}`);
-        let headerRow = tbody.querySelector('.category-row'); // Giữ lại tiêu đề có nút (+)
+        let headerRow = tbody.querySelector('.category-row'); 
         
         tbody.innerHTML = '';
         tbody.appendChild(headerRow);
@@ -883,7 +1023,6 @@
         data.forEach((item, index) => {
             catTotal += item.total;
             
-            // Format Gộp Tên: "Nội dung | Đối tượng"
             let combinedName = item.nd;
             if (item.dt !== '') {
                 combinedName = combinedName ? combinedName + " | " + item.dt : item.dt;
@@ -903,9 +1042,7 @@
             tbody.appendChild(tr);
         });
         
-        // Cập nhật dòng Tiêu đề của hạng mục
         document.getElementById(`total-${day}-${cat}`).innerText = formatVND(catTotal);
-        // Cập nhật trên bảng tổng quát Kế hoạch
         document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(catTotal);
     }
 
