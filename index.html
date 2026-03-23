@@ -213,6 +213,7 @@
         <div id="myDropdown" class="dropdown-content">
             <a onclick="switchModule('module-ban-giao')">Bàn giao tuần trước</a>
             <a onclick="switchModule('module-thoi-gian')">Thời gian</a>
+            <a onclick="switchModule('module-thu-2')">Thứ 2</a>
             <a onclick="switchModule('module-thu-3')">Thứ 3</a>
             <a onclick="switchModule('module-thu-4')">Thứ 4</a>
             <a onclick="switchModule('module-thu-5')">Thứ 5</a>
@@ -267,6 +268,61 @@
             <label>Tháng/Năm:</label>
             <input type="text" id="input-thang-nam" readonly style="width: 250px;">
         </div>
+    </div>
+
+    <div id="module-thu-2" class="module">
+        <div class="day-header">
+            <div>Thứ 2</div>
+            <div id="ngay-thu-2">23/03/2026</div>
+        </div>
+
+        <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ăn sáng</th>
+                    <th>Ăn trưa</th>
+                    <th>Ăn tối</th>
+                    <th>Di chuyển</th>
+                    <th>Tiết kiệm</th>
+                    <th>Khác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>25.000 đ</td>
+                    <td>25.000 đ</td>
+                    <td>0 đ</td>
+                    <td>6.000 đ</td>
+                    <td>50.000 đ</td>
+                    <td>270.000 đ</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
+        
+        <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
+        <table class="details-table">
+            <tbody>
+                <tr>
+                    <td style="width: 15%;">- Ăn sáng:</td>
+                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
+                    <td style="width: 15%;">25.000 đ</td>
+                    <td style="width: 10%;">1</td>
+                    <td style="width: 15%;">25.000 đ</td>
+                    <td style="width: 5%;"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>- Ăn trưa:</td>
+                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
+                    <td>25.000 đ</td>
+                    <td>1</td>
+                    <td>25.000 đ</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <div id="module-thu-3" class="module">
@@ -747,11 +803,16 @@
             inputThangNam.value = `Tháng ${mMon} / Năm ${yMon} - Tháng ${mSun} / Năm ${ySun}`;
         }
 
-        // 5. Cập nhật tiêu đề ngày (Thứ 3 -> CN)
-        for (let i = 1; i <= 6; i++) {
+        // 5. Cập nhật tiêu đề ngày (Thứ 2 -> CN)
+        for (let i = 0; i <= 6; i++) {
             let nextDay = new Date(monday);
             nextDay.setDate(monday.getDate() + i);
-            let targetId = i === 6 ? 'ngay-chua-nhat' : `ngay-thu-${i+2}`;
+            let targetId;
+            if (i === 6) {
+                targetId = 'ngay-chua-nhat';
+            } else {
+                targetId = `ngay-thu-${i+2}`; // Map i=0 tới ngay-thu-2, i=1 tới ngay-thu-3,...
+            }
             let el = document.getElementById(targetId);
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
