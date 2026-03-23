@@ -448,10 +448,11 @@
                     <th style="width: 5%;">STT</th>
                     <th style="width: 8%;">Năm</th>
                     <th style="width: 8%;">Tuần</th>
-                    <th style="width: 25%;">Tên Quỹ</th>
+                    <th style="width: 20%;">Tên Quỹ</th>
                     <th style="width: 20%;">Đối tượng chi</th>
-                    <th style="width: 15%;">Hệ số nộp</th>
-                    <th style="width: 19%;">Thứ sẽ nộp</th>
+                    <th style="width: 12%;">Hệ số nộp</th>
+                    <th style="width: 17%;">Thứ sẽ nộp</th>
+                    <th style="width: 10%;">Xóa</th>
                 </tr>
             </thead>
             <tbody id="fund-table-body">
@@ -752,7 +753,6 @@
 
         for (let i = 0; i < daysArr.length; i++) {
             let nextDay = new Date(monday);
-            // i=0 tương ứng Thứ 3, monday + 1 = Thứ 3
             nextDay.setDate(monday.getDate() + i + 0); 
             let el = document.getElementById(`ngay-${daysArr[i]}`);
             if(el) el.innerText = formatDisplayDate(nextDay);
@@ -1009,15 +1009,17 @@
 
     function addFundRow() {
         const tbody = document.getElementById('fund-table-body');
-        const stt = tbody.children.length + 1;
-        
         const tuNgayVal = document.getElementById('input-tu-ngay').value;
         const currentYear = tuNgayVal ? new Date(tuNgayVal).getFullYear() : new Date().getFullYear();
         const currentWeek = document.getElementById('input-tuan').value || 0;
 
         const tr = document.createElement('tr');
+        // Tạo ID duy nhất cho mỗi hàng dựa trên thời gian
+        const fundUniqueId = 'fund_' + Date.now();
+        tr.setAttribute('data-fund-id', fundUniqueId);
+
         tr.innerHTML = `
-            <td>${stt}</td>
+            <td class="fund-stt"></td>
             <td><input type="text" value="${currentYear}" readonly style="text-align:center; border:none; background:transparent;"></td>
             <td><input type="text" value="${currentWeek}" readonly style="text-align:center; border:none; background:transparent;"></td>
             <td><input type="text" class="fund-name" placeholder="Tên quỹ..." oninput="syncFundToExpense(this)"></td>
@@ -1029,20 +1031,46 @@
                     ${daysArr.map((d, i) => `<option value="${d}">${daysName[i]}</option>`).join('')}
                 </select>
             </td>
+            <td><button type="button" class="btn-remove-row" onclick="removeFundRow(this)">X</button></td>
         `;
         tbody.appendChild(tr);
+        updateFundSTT();
+    }
+
+    function removeFundRow(btn) {
+        const tr = btn.closest('tr');
+        const fundUniqueId = tr.getAttribute('data-fund-id');
+        
+        // Xóa các chi phí liên quan trong expenseData
+        daysArr.forEach(d => {
+            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== fundUniqueId);
+            renderMainCategory(d, 'khac');
+            updateDayTotals(d);
+        });
+        
+        tr.remove();
+        updateFundSTT();
+    }
+
+    function updateFundSTT() {
+        let rows = document.querySelectorAll('#fund-table-body tr');
+        rows.forEach((row, index) => {
+            row.querySelector('.fund-stt').innerText = index + 1;
+        });
     }
 
     function syncFundToExpense(element) {
         const tr = element.closest('tr');
+        const fundUniqueId = tr.getAttribute('data-fund-id');
         const fundName = tr.querySelector('.fund-name').value.trim();
         const fundTarget = tr.querySelector('.fund-target').value.trim();
         const factorStr = tr.querySelector('.fund-factor').value;
         const factor = parseFloat(factorStr) || 0;
         const selectedDay = tr.querySelector('.fund-day').value;
 
+        // Xóa dữ liệu cũ của hàng này trong tất cả các ngày
         daysArr.forEach(d => {
-            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => !item.isFund || item.fundId !== tr.rowIndex);
+            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== fundUniqueId);
             renderMainCategory(d, 'khac');
             updateDayTotals(d);
         });
@@ -1057,10 +1085,10 @@
             nd: "Nộp quỹ: " + fundName,
             dt: fundTarget || "Hệ số", 
             gia: moneyStr,
-            sl: 1, // Số lượng mặc định là 1
+            sl: 1, 
             total: moneyValue,
             isFund: true, 
-            fundId: tr.rowIndex
+            fundUniqueId: fundUniqueId
         });
 
         renderMainCategory(selectedDay, 'khac');
