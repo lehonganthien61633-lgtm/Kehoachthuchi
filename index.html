@@ -6,7 +6,7 @@
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Times New Roman", Times, serif; /* Đã đổi sang Times New Roman */
             margin: 0;
             background-color: #f9f9f9;
         }
@@ -50,6 +50,7 @@
             display: block;
             cursor: pointer;
             border-bottom: 1px solid #eee;
+            font-family: "Times New Roman", Times, serif;
         }
         .dropdown-content a:hover {
             background-color: #f1f1f1;
@@ -89,7 +90,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            max-width: 400px;
+            max-width: 450px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -103,16 +104,23 @@
             text-align: right;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-family: inherit;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1em;
         }
         .form-group input[readonly] {
             background-color: #e9ecef;
             cursor: not-allowed;
+            text-align: center;
         }
         .total-display {
             font-weight: bold;
             font-size: 1.2em;
             color: #d9534f;
+        }
+
+        /* CSS tùy chỉnh hiển thị input type="date" theo chuẩn vi-VN (nếu trình duyệt hỗ trợ) */
+        input[type="date"] {
+            position: relative;
         }
 
         /* Tables cho các ngày */
@@ -166,7 +174,7 @@
             <a onclick="switchModule('module-chua-nhat')">Chúa nhật</a>
         </div>
     </div>
-    <h3 style="margin: 0; font-weight: normal;">Kế Hoạch Chi Tiêu</h3>
+    <h3 style="margin: 0; font-weight: normal; font-family: 'Times New Roman', Times, serif;">Kế Hoạch Chi Tiêu</h3>
 </div>
 
 <div class="container">
@@ -195,7 +203,7 @@
         
         <div class="form-group">
             <label>Từ ngày (Thứ 2):</label>
-            <input type="date" id="input-tu-ngay">
+            <input type="date" id="input-tu-ngay" lang="vi-VN">
         </div>
         <div class="form-group">
             <label>Đến ngày (Chúa nhật):</label>
@@ -207,7 +215,7 @@
         </div>
         <div class="form-group">
             <label>Tháng/Năm:</label>
-            <input type="text" id="input-thang-nam" readonly>
+            <input type="text" id="input-thang-nam" readonly style="width: 250px;">
         </div>
     </div>
 
@@ -379,11 +387,11 @@
     function getMonday(d) {
         d = new Date(d);
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Điều chỉnh nếu ngày là Chúa nhật
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(d.setDate(diff));
     }
 
-    // Format ngày sang dạng chuỗi YYYY-MM-DD để gán vào input type="date"
+    // YYYY-MM-DD cho input type="date"
     function formatToInputDate(date) {
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -391,7 +399,7 @@
         return `${y}-${m}-${d}`;
     }
 
-    // Format hiển thị ngày DD/MM/YYYY
+    // DD/MM/YYYY cho hiển thị text (Định dạng Ngày/Tháng/Năm)
     function formatDisplayDate(date) {
         const d = String(date.getDate()).padStart(2, '0');
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -399,7 +407,6 @@
         return `${d}/${m}/${y}`;
     }
 
-    // Tính số tuần chuẩn ISO 8601
     function getISOWeekNumber(date) {
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
         const dayNum = d.getUTCDay() || 7;
@@ -408,37 +415,44 @@
         return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
     }
 
-    // Khởi tạo thời gian lúc mở trang: Chọn Thứ 2 gần nhất của tuần kế tiếp
     function initTimeModule() {
         const today = getGMT7Date();
-        let nextMonday = new Date(today);
-        nextMonday.setDate(today.getDate() + ((7 - today.getDay() + 1) % 7 || 7));
         
-        // Setup Từ ngày
+        // Xác định giới hạn chọn lịch: Từ "Hôm nay" đến "Chúa nhật của tuần sau"
+        const currentMonday = getMonday(today);
+        let nextMonday = new Date(currentMonday);
+        nextMonday.setDate(currentMonday.getDate() + 7);
+        
+        let nextSunday = new Date(nextMonday);
+        nextSunday.setDate(nextMonday.getDate() + 6);
+
+        // Khóa ngày trong lịch (Chỉ cho phép từ hôm nay đến hết tuần sau)
+        inputTuNgay.min = formatToInputDate(today);
+        inputTuNgay.max = formatToInputDate(nextSunday);
+
+        // Mặc định chọn Thứ 2 tuần kế tiếp
         inputTuNgay.value = formatToInputDate(nextMonday);
         updateTimeData(nextMonday);
     }
 
-    // Xử lý logic mỗi khi Từ ngày thay đổi
     inputTuNgay.addEventListener('change', function() {
         if (!this.value) return;
         
         let selectedDate = new Date(this.value);
         let monday = getMonday(selectedDate);
         
-        // Tự động snap về ngày thứ 2 nếu người dùng chọn ngày khác
+        // Tự động điều chỉnh về Thứ 2 của tuần chứa ngày vừa chọn
         this.value = formatToInputDate(monday);
         updateTimeData(monday);
     });
 
-    // Hàm cập nhật các ô dữ liệu Thời gian & Tiêu đề các ngày
     function updateTimeData(monday) {
-        // Đến ngày (Chúa nhật)
+        // Đến ngày
         let sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        inputDenNgay.value = formatDisplayDate(sunday);
+        inputDenNgay.value = formatDisplayDate(sunday); // Hiển thị chuẩn DD/MM/YYYY
 
-        // Tuần chuẩn ISO
+        // Tuần
         inputTuan.value = getISOWeekNumber(monday);
 
         // Tháng / Năm
@@ -457,7 +471,7 @@
             inputThangNam.value = `Tháng ${mMon} / Năm ${yMon} - Tháng ${mSun} / Năm ${ySun}`;
         }
 
-        // Cập nhật tiêu đề hiển thị các ngày ở các module bên dưới (Thứ 3 -> CN)
+        // Cập nhật tiêu đề ngày (Thứ 3 -> CN) chuẩn DD/MM/YYYY
         for (let i = 1; i <= 6; i++) {
             let nextDay = new Date(monday);
             nextDay.setDate(monday.getDate() + i);
@@ -467,11 +481,9 @@
         }
     }
 
-    // Chạy khởi tạo khi load trang
     window.onload = function() {
         initTimeModule();
     };
-
 </script>
 
 </body>
