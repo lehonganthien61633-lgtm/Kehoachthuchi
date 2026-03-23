@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
+        /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
             font-size: 16px;
@@ -13,6 +14,7 @@
             color: #000;
         }
         
+        /* Navbar & Menu */
         .navbar {
             background-color: #2c3e50;
             color: white;
@@ -65,6 +67,7 @@
             display: block;
         }
 
+        /* Submenu cho Nội dung chi tuần */
         .dropdown-submenu {
             position: relative;
         }
@@ -82,6 +85,7 @@
             display: block;
         }
 
+        /* Container & Modules */
         .container {
             max-width: 900px;
             margin: 30px auto;
@@ -108,6 +112,7 @@
             font-size: 20px;
         }
 
+        /* Form Inputs cho Bàn giao & Thời gian */
         .form-group {
             display: flex;
             justify-content: space-between;
@@ -142,6 +147,7 @@
             color: #d32f2f;
         }
 
+        /* Hack CSS để ghi đè format ngày tháng thành dd/mm/yyyy */
         .date-wrapper {
             position: relative;
             width: 200px;
@@ -179,6 +185,7 @@
             pointer-events: none; 
         }
 
+        /* Tables cho các ngày */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -227,6 +234,7 @@
             border-bottom: none;
         }
         
+        /* Modal & Nút Thêm */
         .btn-add {
             background-color: #4CAF50;
             color: white;
@@ -295,6 +303,7 @@
         }
         .btn-save:hover { background-color: #1a252f; }
         
+        /* Bảng bên trong Modal */
         .modal-table {
             width: 100%;
             border-collapse: collapse;
@@ -400,7 +409,7 @@
     </div>
 
     <div id="module-thoi-gian" class="module">
-        <h2 class="module-title">Thông Tin Thời Gian</h2>
+        <h2 class="module-title">Thông Tin Thời Pháp</h2>
         <div class="form-group">
             <label>Từ ngày (Bắt đầu tuần):</label>
             <div class="date-wrapper">
