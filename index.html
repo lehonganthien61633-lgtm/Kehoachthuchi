@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kế Hoạch Chi Tiêu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+        h1 {
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: normal;
+        }
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .header-grid .right-align {
+            text-align: right;
+        }
+        .header-grid .center-align {
+            text-align: center;
+        }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+        .day-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        .details-table td {
+            border: none;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        .details-table td:nth-child(n+3) {
+            text-align: right;
+        }
+        .details-table td:last-child {
+            text-align: center;
+        }
+        .bold-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Kế Hoạch Chi Tiêu</h1>
+
+    <div class="header-grid">
+        <div>
+            <div>Bàn giao tuần trước:</div>
+            <div>+ Số dư: <span class="bold-text">489.944 đ</span></div>
+        </div>
+        <div class="center-align">
+            <div>Từ ngày: 23/03/2026 đến ngày: 29/03/2026</div>
+            <div>Tổng chi tuần dự kiến: <span class="bold-text">1.087.000 đ</span></div>
+        </div>
+        <div class="right-align">
+            <div>Tuần: 13</div>
+            <div>Tháng: 3/2026</div>
+        </div>
+    </div>
+
+    <div class="divider">--------------------------------------------------</div>
+
+    <div class="day-title">
+        <div>Thứ 3</div>
+        <div>24/03/2026</div>
+    </div>
+
+    <div class="bold-text">* Kế hoạch</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Ăn sáng</th>
+                <th>Ăn trưa</th>
+                <th>Ăn tối</th>
+                <th>Di chuyển</th>
+                <th>Tiết kiệm</th>
+                <th>Khác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>25.000 đ</td>
+                <td>25.000 đ</td>
+                <td>0 đ</td>
+                <td>6.000 đ</td>
+                <td>50.000 đ</td>
+                <td>270.000 đ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="bold-text" style="margin-bottom: 10px;">* Tổng chi dự kiến: 376.000 đ</div>
+    
+    <div class="bold-text">* Diễn giải cụ thể</div>
+    <table class="details-table">
+        <tbody>
+            <tr>
+                <td style="width: 15%;">- Ăn sáng:</td>
+                <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
+                <td style="width: 15%;">25.000 đ</td>
+                <td style="width: 10%;">1</td>
+                <td style="width: 15%;">25.000 đ</td>
+                <td style="width: 5%;"><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>- Ăn trưa:</td>
+                <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
+                <td>25.000 đ</td>
+                <td>1</td>
+                <td>25.000 đ</td>
+                <td><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>- Ăn tối:</td>
+                <td>Tùy chỉnh | Canteen KTX Bách khoa</td>
+                <td>25.000 đ</td>
+                <td>0</td>
+                <td>0 đ</td>
+                <td><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>- Di chuyển:</td>
+                <td><span class="bold-text">6.000 đ</span></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>+ Tuyến 08 | FutaBus</td>
+                <td>3.000 đ</td>
+                <td>2</td>
+                <td>6.000 đ</td>
+                <td><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>- Tiết kiệm:</td>
+                <td>STK29102024 | OCB</td>
+                <td>50.000 đ</td>
+                <td>1</td>
+                <td>50.000 đ</td>
+                <td><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>- Khác:</td>
+                <td>270.000 đ</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
