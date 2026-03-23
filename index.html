@@ -7,44 +7,109 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
             background-color: #f9f9f9;
         }
+        
+        /* Navbar & Menu */
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .menu-btn {
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+            margin-right: 20px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            top: 40px;
+            left: 0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .show {
+            display: block;
+        }
+
+        /* Container & Modules */
         .container {
             max-width: 900px;
-            margin: auto;
+            margin: 20px auto;
             background: #fff;
             padding: 20px;
             border: 1px solid #ccc;
+            min-height: 400px;
         }
-        h1 {
+        .module {
+            display: none;
+        }
+        .module.active {
+            display: block;
+        }
+
+        h2.module-title {
             text-align: center;
             text-transform: uppercase;
             font-weight: normal;
-        }
-        .header-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 10px;
             margin-bottom: 20px;
-            line-height: 1.6;
-            align-items: end;
         }
-        .header-grid .right-align {
-            text-align: right;
-        }
-        .header-grid .center-align {
-            text-align: center;
-        }
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            letter-spacing: 2px;
-        }
-        .day-title {
-            text-align: center;
-            font-weight: bold;
+
+        /* Form Inputs cho Bàn giao & Thời gian */
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
         }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            padding: 8px;
+            width: 180px;
+            text-align: right;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .total-display {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #d9534f;
+        }
+
+        /* Tables cho các ngày */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -71,237 +136,249 @@
         .bold-text {
             font-weight: bold;
         }
-
-        /* Nút Bàn giao tuần trước */
-        #btn-ban-giao {
-            background-color: #e0e0e0;
-            border: 1px solid #aaa;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 1em;
-            margin-bottom: 5px;
-            border-radius: 4px;
-        }
-        #btn-ban-giao:hover {
-            background-color: #d0d0d0;
-        }
-
-        /* CSS cho Modal (Popup) */
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 10; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(0,0,0,0.5); 
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto; 
-            padding: 20px;
-            border: 1px solid #888;
-            width: 350px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
+        .day-header {
+            text-align: center;
             font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-        }
-        .modal-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 15px;
-        }
-        .modal-group input {
-            padding: 5px;
-            width: 150px;
-            text-align: right;
-        }
-        .modal-total {
-            font-weight: bold;
-            border-top: 1px solid #ccc;
-            padding-top: 15px;
-        }
-        #btn-luu {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-        #btn-luu:hover {
-            background-color: #45a049;
+            font-size: 1.2em;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Kế Hoạch Chi Tiêu</h1>
-
-    <div class="header-grid">
-        <div>
-            <button id="btn-ban-giao">Bàn giao tuần trước ✎</button>
-            <div>+ Số dư: <span class="bold-text" id="hien-thi-so-du">489.944 đ</span></div>
-        </div>
-        <div class="center-align">
-            <div>Từ ngày: 23/03/2026 đến ngày: 29/03/2026</div>
-            <div>Tổng chi tuần dự kiến: <span class="bold-text">1.087.000 đ</span></div>
-        </div>
-        <div class="right-align">
-            <div>Tuần: 13</div>
-            <div>Tháng: 3/2026</div>
+<div class="navbar">
+    <div class="dropdown">
+        <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
+        <div id="myDropdown" class="dropdown-content">
+            <a onclick="switchModule('module-ban-giao')">Bàn giao tuần trước</a>
+            <a onclick="switchModule('module-thoi-gian')">Thời gian</a>
+            <a onclick="switchModule('module-thu-3')">Thứ 3</a>
+            <a onclick="switchModule('module-thu-4')">Thứ 4</a>
+            <a onclick="switchModule('module-thu-5')">Thứ 5</a>
+            <a onclick="switchModule('module-thu-6')">Thứ 6</a>
+            <a onclick="switchModule('module-thu-7')">Thứ 7</a>
+            <a onclick="switchModule('module-chua-nhat')">Chúa nhật</a>
         </div>
     </div>
-
-    <div class="divider">--------------------------------------------------</div>
-
-    <div class="day-title">
-        <div>Thứ 3</div>
-        <div>24/03/2026</div>
-    </div>
-
-    <div class="bold-text">* Kế hoạch</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Ăn sáng</th>
-                <th>Ăn trưa</th>
-                <th>Ăn tối</th>
-                <th>Di chuyển</th>
-                <th>Tiết kiệm</th>
-                <th>Khác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>25.000 đ</td>
-                <td>25.000 đ</td>
-                <td>0 đ</td>
-                <td>6.000 đ</td>
-                <td>50.000 đ</td>
-                <td>270.000 đ</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="bold-text" style="margin-bottom: 10px;">* Tổng chi dự kiến: 376.000 đ</div>
-    
-    <div class="bold-text">* Diễn giải cụ thể</div>
-    <table class="details-table">
-        <tbody>
-            <tr>
-                <td style="width: 15%;">- Ăn sáng:</td>
-                <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                <td style="width: 15%;">25.000 đ</td>
-                <td style="width: 10%;">1</td>
-                <td style="width: 15%;">25.000 đ</td>
-                <td style="width: 5%;"><input type="checkbox"></td>
-            </tr>
-            <tr>
-                <td>- Ăn trưa:</td>
-                <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                <td>25.000 đ</td>
-                <td>1</td>
-                <td>25.000 đ</td>
-                <td><input type="checkbox"></td>
-            </tr>
-            <tr>
-                <td>- Ăn tối:</td>
-                <td>Tùy chỉnh | Canteen KTX Bách khoa</td>
-                <td>25.000 đ</td>
-                <td>0</td>
-                <td>0 đ</td>
-                <td><input type="checkbox"></td>
-            </tr>
-            <tr>
-                <td>- Di chuyển:</td>
-                <td><span class="bold-text">6.000 đ</span></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>+ Tuyến 08 | FutaBus</td>
-                <td>3.000 đ</td>
-                <td>2</td>
-                <td>6.000 đ</td>
-                <td><input type="checkbox"></td>
-            </tr>
-            <tr>
-                <td>- Tiết kiệm:</td>
-                <td>STK29102024 | OCB</td>
-                <td>50.000 đ</td>
-                <td>1</td>
-                <td>50.000 đ</td>
-                <td><input type="checkbox"></td>
-            </tr>
-            <tr>
-                <td>- Khác:</td>
-                <td>270.000 đ</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+    <h3 style="margin: 0; font-weight: normal;">Kế Hoạch Chi Tiêu</h3>
 </div>
 
-<div id="modal-nhap-so-du" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 style="text-align: center; margin-top: 0;">Nhập Số Dư Tuần Trước</h2>
+<div class="container">
+    
+    <div id="module-ban-giao" class="module active">
+        <h2 class="module-title">Bàn Giao Tuần Trước</h2>
         
-        <div class="modal-group">
-            <label for="input-tien-mat">Tiền mặt (VNĐ):</label>
+        <div class="form-group">
+            <label>Tiền mặt (VNĐ):</label>
             <input type="text" id="input-tien-mat" value="0">
         </div>
         
-        <div class="modal-group">
-            <label for="input-ngan-hang">Ngân hàng (VNĐ):</label>
+        <div class="form-group">
+            <label>Ngân hàng (VNĐ):</label>
             <input type="text" id="input-ngan-hang" value="0">
         </div>
         
-        <div class="modal-group modal-total">
-            <label>Tổng cộng:</label>
-            <span id="hien-thi-tong-modal">0 đ</span>
+        <div class="form-group" style="border-top: 1px solid #ccc; padding-top: 15px;">
+            <label>Tổng số dư hiện tại:</label>
+            <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
         </div>
-        
-        <button id="btn-luu">Lưu</button>
     </div>
+
+    <div id="module-thoi-gian" class="module">
+        <h2 class="module-title">Thông Tin Thời Gian</h2>
+        
+        <div class="form-group">
+            <label>Tuần:</label>
+            <input type="number" value="13" style="text-align: left;">
+        </div>
+        <div class="form-group">
+            <label>Tháng/Năm:</label>
+            <input type="text" value="3/2026" style="text-align: left;">
+        </div>
+        <div class="form-group">
+            <label>Từ ngày:</label>
+            <input type="text" value="23/03/2026" style="text-align: left;">
+        </div>
+        <div class="form-group">
+            <label>Đến ngày:</label>
+            <input type="text" value="29/03/2026" style="text-align: left;">
+        </div>
+        <div class="form-group" style="border-top: 1px solid #ccc; padding-top: 15px;">
+            <label>Tổng chi tuần dự kiến:</label>
+            <input type="text" value="1,087,000" id="tong-chi-du-kien">
+        </div>
+    </div>
+
+    <div id="module-thu-3" class="module">
+        <div class="day-header">
+            <div>Thứ 3</div>
+            <div>24/03/2026</div>
+        </div>
+
+        <div class="bold-text">* Kế hoạch</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ăn sáng</th>
+                    <th>Ăn trưa</th>
+                    <th>Ăn tối</th>
+                    <th>Di chuyển</th>
+                    <th>Tiết kiệm</th>
+                    <th>Khác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>25.000 đ</td>
+                    <td>25.000 đ</td>
+                    <td>0 đ</td>
+                    <td>6.000 đ</td>
+                    <td>50.000 đ</td>
+                    <td>270.000 đ</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="bold-text" style="margin-bottom: 10px;">* Tổng chi dự kiến: 376.000 đ</div>
+        
+        <div class="bold-text">* Diễn giải cụ thể</div>
+        <table class="details-table">
+            <tbody>
+                <tr>
+                    <td style="width: 15%;">- Ăn sáng:</td>
+                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
+                    <td style="width: 15%;">25.000 đ</td>
+                    <td style="width: 10%;">1</td>
+                    <td style="width: 15%;">25.000 đ</td>
+                    <td style="width: 5%;"><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>- Ăn trưa:</td>
+                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
+                    <td>25.000 đ</td>
+                    <td>1</td>
+                    <td>25.000 đ</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>- Ăn tối:</td>
+                    <td>Tùy chỉnh | Canteen KTX Bách khoa</td>
+                    <td>25.000 đ</td>
+                    <td>0</td>
+                    <td>0 đ</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>- Di chuyển:</td>
+                    <td><span class="bold-text">6.000 đ</span></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>+ Tuyến 08 | FutaBus</td>
+                    <td>3.000 đ</td>
+                    <td>2</td>
+                    <td>6.000 đ</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>- Tiết kiệm:</td>
+                    <td>STK29102024 | OCB</td>
+                    <td>50.000 đ</td>
+                    <td>1</td>
+                    <td>50.000 đ</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td>- Khác:</td>
+                    <td>270.000 đ</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="module-thu-4" class="module">
+        <div class="day-header">
+            <div>Thứ 4</div>
+            <div>25/03/2026</div>
+        </div>
+        <p style="text-align: center; color: #888;">Nội dung của Thứ 4</p>
+    </div>
+
+    <div id="module-thu-5" class="module">
+        <div class="day-header">
+            <div>Thứ 5</div>
+            <div>26/03/2026</div>
+        </div>
+        <p style="text-align: center; color: #888;">Nội dung của Thứ 5</p>
+    </div>
+
+    <div id="module-thu-6" class="module">
+        <div class="day-header">
+            <div>Thứ 6</div>
+            <div>27/03/2026</div>
+        </div>
+        <p style="text-align: center; color: #888;">Nội dung của Thứ 6</p>
+    </div>
+
+    <div id="module-thu-7" class="module">
+        <div class="day-header">
+            <div>Thứ 7</div>
+            <div>28/03/2026</div>
+        </div>
+        <p style="text-align: center; color: #888;">Nội dung của Thứ 7</p>
+    </div>
+
+    <div id="module-chua-nhat" class="module">
+        <div class="day-header">
+            <div>Chúa nhật</div>
+            <div>29/03/2026</div>
+        </div>
+        <p style="text-align: center; color: #888;">Nội dung của Chúa nhật</p>
+    </div>
+
 </div>
 
 <script>
-    const modal = document.getElementById("modal-nhap-so-du");
-    const btnMoModal = document.getElementById("btn-ban-giao");
-    const nutDongModal = document.getElementsByClassName("close")[0];
-    
+    // --- XỬ LÝ MENU DROPDOWN ---
+    function toggleMenu() {
+        document.getElementById("myDropdown").classList.toggle("show");
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.menu-btn')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+
+    // --- XỬ LÝ CHUYỂN ĐỔI MODULE ---
+    function switchModule(moduleId) {
+        // Ẩn tất cả các module
+        var modules = document.getElementsByClassName("module");
+        for (var i = 0; i < modules.length; i++) {
+            modules[i].classList.remove("active");
+        }
+        // Hiện module được chọn
+        document.getElementById(moduleId).classList.add("active");
+    }
+
+    // --- XỬ LÝ BÀN GIAO TUẦN TRƯỚC ---
     const inputTienMat = document.getElementById("input-tien-mat");
     const inputNganHang = document.getElementById("input-ngan-hang");
-    const hienThiTongModal = document.getElementById("hien-thi-tong-modal");
-    
-    const btnLuu = document.getElementById("btn-luu");
-    const hienThiSoDu = document.getElementById("hien-thi-so-du");
+    const hienThiTongBanGiao = document.getElementById("hien-thi-tong-ban-giao");
 
     function formatVND(soTien) {
         return soTien.toLocaleString('vi-VN') + ' đ';
@@ -317,44 +394,29 @@
         input.value = giaTri;
     }
 
-    function tinhTong() {
+    function tinhTongBanGiao() {
         const tienMat = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
         const nganHang = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
         const tongCong = tienMat + nganHang;
-        hienThiTongModal.textContent = formatVND(tongCong);
-        return tongCong;
+        hienThiTongBanGiao.textContent = formatVND(tongCong);
     }
 
     inputTienMat.addEventListener("input", function() {
         dinhDangDauPhay(this);
-        tinhTong();
+        tinhTongBanGiao();
     });
 
     inputNganHang.addEventListener("input", function() {
         dinhDangDauPhay(this);
-        tinhTong();
+        tinhTongBanGiao();
     });
 
-    btnMoModal.onclick = function() {
-        modal.style.display = "block";
-        tinhTong();
-    }
+    // --- XỬ LÝ FORMAT ĐẦU VÀO TRANG THỜI GIAN ---
+    const inputTongChi = document.getElementById("tong-chi-du-kien");
+    inputTongChi.addEventListener("input", function() {
+        dinhDangDauPhay(this);
+    });
 
-    nutDongModal.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-
-    btnLuu.onclick = function() {
-        const tongCong = tinhTong();
-        hienThiSoDu.textContent = formatVND(tongCong);
-        modal.style.display = "none";
-    }
 </script>
 
 </body>
