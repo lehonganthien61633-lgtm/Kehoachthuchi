@@ -314,7 +314,7 @@
             padding: 8px;
             text-align: center;
         }
-        .modal-table input {
+        .modal-table input, .modal-table select {
             width: 100%;
             box-sizing: border-box;
             border: 1px solid #ddd;
@@ -386,7 +386,7 @@
                 <div class="dropdown-content-sub" id="submenu-days">
                 </div>
             </div>
-            <a onclick="switchModule('module-site-2')">Site Thứ 2</a>
+            <a onclick="switchModule('module-site-2')">Bảng Hệ Số Nộp Quỹ</a>
         </div>
     </div>
     <h3 style="margin: 0; font-weight: bold; font-family: 'Times New Roman', Times, serif; letter-spacing: 1px;">KẾ HOẠCH CHI TIÊU</h3>
@@ -438,10 +438,25 @@
     </div>
 
     <div id="module-site-2" class="module">
-        <h2 class="module-title">Site Thứ 2</h2>
-        <div style="padding: 20px; text-align: center;">
-            <p>Đây là khu vực hiển thị nội dung của Site thứ 2. Bạn có thể chèn thêm các bảng biểu, biểu đồ, hoặc chức năng quản lý khác tại đây.</p>
+        <h2 class="module-title">Bảng Hệ Số Nộp Quỹ</h2>
+        <div style="margin-bottom: 15px; text-align: right;">
+            <button class="btn-add-row" onclick="addFundRow()">+ Thêm quỹ mới</button>
         </div>
+        <table class="modal-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">STT</th>
+                    <th style="width: 10%;">Năm</th>
+                    <th style="width: 10%;">Tuần</th>
+                    <th style="width: 30%;">Tên Quỹ</th>
+                    <th style="width: 25%;">Hệ số nộp (VNĐ)</th>
+                    <th style="width: 20%;">Thứ sẽ nộp</th>
+                </tr>
+            </thead>
+            <tbody id="fund-table-body">
+            </tbody>
+        </table>
+        <p style="font-style: italic; color: #666; font-size: 14px; text-align: center; margin-top: 15px;">* Lưu ý: Khi nhập Hệ số và chọn Thứ, dữ liệu sẽ tự động cập nhật vào mục "Khác" của ngày tương ứng.</p>
     </div>
 </div>
 
@@ -497,8 +512,8 @@
 </div>
 
 <script>
-    const daysArr = ['thu-2'-'thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
-    const daysName = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chúa nhật'];
+    const daysArr = ['thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
+    const daysName = ['Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chúa nhật'];
     const catsArr = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
     const catsName = ['Ăn sáng', 'Ăn trưa', 'Ăn tối', 'Di chuyển', 'Tiết kiệm', 'Khác'];
     
@@ -513,6 +528,7 @@
     let sampleExpenses = []; 
     let currentDay = '';
     let currentCat = '';
+    let fundData = [];
 
     function renderWeekUI() {
         let container = document.getElementById('tuan-container');
@@ -523,7 +539,6 @@
         daysArr.forEach((day, index) => {
             let dayName = daysName[index];
             
-            // Đã thay đổi hàm onclick thành showDay thay vì scrollToDay
             submenu.innerHTML += `<a onclick="showDay('${day}')">${dayName}</a>`;
             
             let html = `
@@ -598,14 +613,12 @@
         document.getElementById(moduleId).classList.add("active");
         window.scrollTo(0, 0); 
 
-        // Hiển thị lại toàn bộ các ngày khi bấm vào menu gốc "Nội dung chi tuần"
         if (moduleId === 'module-chi-tieu-tuan') {
             let sections = document.querySelectorAll('.day-section');
             sections.forEach(sec => sec.style.display = 'block');
         }
     }
 
-    // Hàm mới: Ẩn các ngày khác và chỉ hiển thị duy nhất ngày được chọn
     function showDay(dayId) {
         switchModule('module-chi-tieu-tuan');
         let sections = document.querySelectorAll('.day-section');
@@ -725,6 +738,7 @@
 
         for (let i = 0; i < daysArr.length; i++) {
             let nextDay = new Date(monday);
+            // i=0 tương ứng Thứ 3, monday + 1 = Thứ 3
             nextDay.setDate(monday.getDate() + i + 1); 
             let el = document.getElementById(`ngay-${daysArr[i]}`);
             if(el) el.innerText = formatDisplayDate(nextDay);
@@ -977,6 +991,60 @@
             dayTotal += catTotal;
         });
         document.getElementById(`tong-chi-${day}`).innerText = formatVND(dayTotal);
+    }
+
+    function addFundRow() {
+        const tbody = document.getElementById('fund-table-body');
+        const stt = tbody.children.length + 1;
+        
+        const tuNgayVal = document.getElementById('input-tu-ngay').value;
+        const currentYear = tuNgayVal ? new Date(tuNgayVal).getFullYear() : new Date().getFullYear();
+        const currentWeek = document.getElementById('input-tuan').value || 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${stt}</td>
+            <td><input type="text" value="${currentYear}" readonly style="text-align:center; border:none; background:transparent;"></td>
+            <td><input type="text" value="${currentWeek}" readonly style="text-align:center; border:none; background:transparent;"></td>
+            <td><input type="text" class="fund-name" placeholder="Tên quỹ..." oninput="syncFundToExpense(this)"></td>
+            <td><input type="text" class="fund-factor" placeholder="0" oninput="dinhDangDauPhay(this); syncFundToExpense(this)"></td>
+            <td>
+                <select class="fund-day" onchange="syncFundToExpense(this)">
+                    <option value="">-- Chọn thứ --</option>
+                    ${daysArr.map((d, i) => `<option value="${d}">${daysName[i]}</option>`).join('')}
+                </select>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function syncFundToExpense(element) {
+        const tr = element.closest('tr');
+        const fundName = tr.querySelector('.fund-name').value.trim();
+        const factorStr = tr.querySelector('.fund-factor').value.replace(/,/g, '');
+        const factor = parseFloat(factorStr) || 0;
+        const selectedDay = tr.querySelector('.fund-day').value;
+
+        daysArr.forEach(d => {
+            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => !item.isFund || item.fundId !== tr.rowIndex);
+            renderMainCategory(d, 'khac');
+            updateDayTotals(d);
+        });
+
+        if (!selectedDay || !fundName || factor <= 0) return;
+
+        expenseData[selectedDay]['khac'].push({
+            nd: "Nộp quỹ: " + fundName,
+            dt: "Hệ số",
+            gia: factorStr,
+            sl: 1,
+            total: factor,
+            isFund: true, 
+            fundId: tr.rowIndex
+        });
+
+        renderMainCategory(selectedDay, 'khac');
+        updateDayTotals(selectedDay);
     }
 
     window.onload = function() {
