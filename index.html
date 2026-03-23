@@ -446,17 +446,18 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">STT</th>
-                    <th style="width: 10%;">Năm</th>
-                    <th style="width: 10%;">Tuần</th>
-                    <th style="width: 30%;">Tên Quỹ</th>
-                    <th style="width: 25%;">Hệ số nộp (VNĐ)</th>
-                    <th style="width: 20%;">Thứ sẽ nộp</th>
+                    <th style="width: 8%;">Năm</th>
+                    <th style="width: 8%;">Tuần</th>
+                    <th style="width: 25%;">Tên Quỹ</th>
+                    <th style="width: 20%;">Đối tượng chi</th>
+                    <th style="width: 15%;">Hệ số nộp</th>
+                    <th style="width: 19%;">Thứ sẽ nộp</th>
                 </tr>
             </thead>
             <tbody id="fund-table-body">
             </tbody>
         </table>
-        <p style="font-style: italic; color: #666; font-size: 14px; text-align: center; margin-top: 15px;">* Lưu ý: Khi nhập Hệ số và chọn Thứ, dữ liệu sẽ tự động cập nhật vào mục "Khác" của ngày tương ứng.</p>
+        <p style="font-style: italic; color: #666; font-size: 14px; text-align: center; margin-top: 15px;">* Lưu ý: Mỗi 1 hệ số tương ứng 100.000đ. Khi nhập Hệ số và chọn Thứ, dữ liệu sẽ tự động cập nhật vào mục "Khác".</p>
     </div>
 </div>
 
@@ -643,6 +644,19 @@
             giaTri = '';
         }
         input.value = giaTri;
+    }
+
+    // Hàm mới: Format giá trị nhập vào thành float tối đa 2 số thập phân
+    function formatFloatInput(input) {
+        let val = input.value.replace(/[^0-9.]/g, ''); 
+        let parts = val.split('.');
+        if (parts.length > 2) {
+            val = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (parts.length === 2 && parts[1].length > 2) {
+            val = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+        input.value = val;
     }
 
     const inputTienMat = document.getElementById("input-tien-mat");
@@ -1007,7 +1021,8 @@
             <td><input type="text" value="${currentYear}" readonly style="text-align:center; border:none; background:transparent;"></td>
             <td><input type="text" value="${currentWeek}" readonly style="text-align:center; border:none; background:transparent;"></td>
             <td><input type="text" class="fund-name" placeholder="Tên quỹ..." oninput="syncFundToExpense(this)"></td>
-            <td><input type="text" class="fund-factor" placeholder="0" oninput="dinhDangDauPhay(this); syncFundToExpense(this)"></td>
+            <td><input type="text" class="fund-target" placeholder="Đối tượng..." oninput="syncFundToExpense(this)"></td>
+            <td><input type="text" class="fund-factor" placeholder="0.00" oninput="formatFloatInput(this); syncFundToExpense(this)"></td>
             <td>
                 <select class="fund-day" onchange="syncFundToExpense(this)">
                     <option value="">-- Chọn thứ --</option>
@@ -1021,7 +1036,8 @@
     function syncFundToExpense(element) {
         const tr = element.closest('tr');
         const fundName = tr.querySelector('.fund-name').value.trim();
-        const factorStr = tr.querySelector('.fund-factor').value.replace(/,/g, '');
+        const fundTarget = tr.querySelector('.fund-target').value.trim();
+        const factorStr = tr.querySelector('.fund-factor').value;
         const factor = parseFloat(factorStr) || 0;
         const selectedDay = tr.querySelector('.fund-day').value;
 
@@ -1033,12 +1049,16 @@
 
         if (!selectedDay || !fundName || factor <= 0) return;
 
+        // Tính giá tiền dựa vào hệ số (1 hệ số = 100,000)
+        const moneyValue = factor * 100000;
+        const moneyStr = moneyValue.toLocaleString('en-US');
+
         expenseData[selectedDay]['khac'].push({
             nd: "Nộp quỹ: " + fundName,
-            dt: "Hệ số",
-            gia: factorStr,
-            sl: 1,
-            total: factor,
+            dt: fundTarget || "Hệ số", 
+            gia: moneyStr,
+            sl: 1, // Số lượng mặc định là 1
+            total: moneyValue,
             isFund: true, 
             fundId: tr.rowIndex
         });
