@@ -27,6 +27,7 @@
             grid-template-columns: 1fr 1fr 1fr;
             margin-bottom: 20px;
             line-height: 1.6;
+            align-items: end;
         }
         .header-grid .right-align {
             text-align: right;
@@ -70,6 +71,84 @@
         .bold-text {
             font-weight: bold;
         }
+
+        /* Nút Bàn giao tuần trước */
+        #btn-ban-giao {
+            background-color: #e0e0e0;
+            border: 1px solid #aaa;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1em;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        #btn-ban-giao:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* CSS cho Modal (Popup) */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 10; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.5); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 350px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .modal-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .modal-group input {
+            padding: 5px;
+            width: 150px;
+            text-align: right;
+        }
+        .modal-total {
+            font-weight: bold;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+        }
+        #btn-luu {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        #btn-luu:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -79,8 +158,8 @@
 
     <div class="header-grid">
         <div>
-            <div>Bàn giao tuần trước:</div>
-            <div>+ Số dư: <span class="bold-text">489.944 đ</span></div>
+            <button id="btn-ban-giao">Bàn giao tuần trước ✎</button>
+            <div>+ Số dư: <span class="bold-text" id="hien-thi-so-du">489.944 đ</span></div>
         </div>
         <div class="center-align">
             <div>Từ ngày: 23/03/2026 đến ngày: 29/03/2026</div>
@@ -187,6 +266,87 @@
         </tbody>
     </table>
 </div>
+
+<div id="modal-nhap-so-du" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 style="text-align: center; margin-top: 0;">Nhập Số Dư Tuần Trước</h2>
+        
+        <div class="modal-group">
+            <label for="input-tien-mat">Tiền mặt (VNĐ):</label>
+            <input type="number" id="input-tien-mat" value="0" min="0">
+        </div>
+        
+        <div class="modal-group">
+            <label for="input-ngan-hang">Ngân hàng (VNĐ):</label>
+            <input type="number" id="input-ngan-hang" value="0" min="0">
+        </div>
+        
+        <div class="modal-group modal-total">
+            <label>Tổng cộng:</label>
+            <span id="hien-thi-tong-modal">0 đ</span>
+        </div>
+        
+        <button id="btn-luu">Lưu</button>
+    </div>
+</div>
+
+<script>
+    // Lấy các element
+    const modal = document.getElementById("modal-nhap-so-du");
+    const btnMoModal = document.getElementById("btn-ban-giao");
+    const nutDongModal = document.getElementsByClassName("close")[0];
+    
+    const inputTienMat = document.getElementById("input-tien-mat");
+    const inputNganHang = document.getElementById("input-ngan-hang");
+    const hienThiTongModal = document.getElementById("hien-thi-tong-modal");
+    
+    const btnLuu = document.getElementById("btn-luu");
+    const hienThiSoDu = document.getElementById("hien-thi-so-du");
+
+    // Hàm định dạng số tiền sang chuẩn VNĐ
+    function formatVND(soTien) {
+        return soTien.toLocaleString('vi-VN') + ' đ';
+    }
+
+    // Hàm tính tổng trong modal
+    function tinhTong() {
+        const tienMat = parseFloat(inputTienMat.value) || 0;
+        const nganHang = parseFloat(inputNganHang.value) || 0;
+        const tongCong = tienMat + nganHang;
+        hienThiTongModal.textContent = formatVND(tongCong);
+        return tongCong;
+    }
+
+    // Lắng nghe sự kiện khi người dùng gõ số
+    inputTienMat.addEventListener("input", tinhTong);
+    inputNganHang.addEventListener("input", tinhTong);
+
+    // Mở modal
+    btnMoModal.onclick = function() {
+        modal.style.display = "block";
+        tinhTong(); // Tính lại tổng mỗi lần mở
+    }
+
+    // Đóng modal bằng nút X
+    nutDongModal.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // Đóng modal khi bấm ra ngoài khoảng trắng
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Xử lý khi bấm nút Lưu
+    btnLuu.onclick = function() {
+        const tongCong = tinhTong();
+        hienThiSoDu.textContent = formatVND(tongCong);
+        modal.style.display = "none";
+    }
+</script>
 
 </body>
 </html>
