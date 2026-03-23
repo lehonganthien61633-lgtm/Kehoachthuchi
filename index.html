@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
-        /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
             font-size: 16px;
@@ -14,7 +13,6 @@
             color: #000;
         }
         
-        /* Navbar & Menu */
         .navbar {
             background-color: #2c3e50;
             color: white;
@@ -64,7 +62,6 @@
             display: block;
         }
 
-        /* Container & Modules */
         .container {
             max-width: 900px;
             margin: 30px auto;
@@ -91,7 +88,6 @@
             font-size: 20px;
         }
 
-        /* Form Inputs cho Bàn giao & Thời gian */
         .form-group {
             display: flex;
             justify-content: space-between;
@@ -126,7 +122,6 @@
             color: #d32f2f;
         }
 
-        /* Hack CSS để ghi đè format ngày tháng thành dd/mm/yyyy */
         .date-wrapper {
             position: relative;
             width: 200px;
@@ -164,7 +159,6 @@
             pointer-events: none; 
         }
 
-        /* Tables cho các ngày */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -203,6 +197,84 @@
             font-size: 1.3em;
             text-decoration: underline;
         }
+        
+        /* Modal & Nút Thêm */
+        .btn-add {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+            line-height: 20px;
+            padding: 0;
+            font-size: 18px;
+            vertical-align: middle;
+        }
+        .btn-add:hover {
+            background-color: #45a049;
+        }
+        .category-row td {
+            background-color: #e9ecef;
+            border-bottom: 1px solid #aaa !important;
+        }
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 20; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.5); 
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto; 
+            padding: 25px;
+            border: 1px solid #888;
+            width: 450px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover, .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-save:hover {
+            background-color: #1a252f;
+        }
+        .modal .form-group input {
+            width: 250px;
+            text-align: left;
+        }
+        .modal .form-group input[type="number"], .modal .form-group input[id="exp-giatien"] {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -226,20 +298,16 @@
 </div>
 
 <div class="container">
-    
     <div id="module-ban-giao" class="module active">
         <h2 class="module-title">Bàn Giao Tuần Trước</h2>
-        
         <div class="form-group">
             <label>Tiền mặt (VNĐ):</label>
             <input type="text" id="input-tien-mat" value="0">
         </div>
-        
         <div class="form-group">
             <label>Ngân hàng (VNĐ):</label>
             <input type="text" id="input-ngan-hang" value="0">
         </div>
-        
         <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
             <label>Tổng số dư hiện tại:</label>
             <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
@@ -248,7 +316,6 @@
 
     <div id="module-thoi-gian" class="module">
         <h2 class="module-title">Thông Tin Thời Gian</h2>
-        
         <div class="form-group">
             <label>Từ ngày (Thứ 2):</label>
             <div class="date-wrapper">
@@ -273,53 +340,73 @@
     <div id="module-thu-2" class="module">
         <div class="day-header">
             <div>Thứ 2</div>
-            <div id="ngay-thu-2">23/03/2026</div>
+            <div id="ngay-thu-2">--/--/----</div>
         </div>
-
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
+                <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
+                    <td id="summary-thu-2-ansang">0 đ</td>
+                    <td id="summary-thu-2-antrua">0 đ</td>
+                    <td id="summary-thu-2-antoi">0 đ</td>
+                    <td id="summary-thu-2-dichuyen">0 đ</td>
+                    <td id="summary-thu-2-tietkiem">0 đ</td>
+                    <td id="summary-thu-2-khac">0 đ</td>
                 </tr>
             </tbody>
         </table>
-
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
-        
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-2" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
+            <tbody id="group-thu-2-ansang">
+                <tr class="category-row">
+                    <td colspan="6" style="text-align: left; font-weight: bold;">
+                        - Ăn sáng: <span id="total-thu-2-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
+                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'ansang', 'Ăn sáng')">+</button>
+                    </td>
                 </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
+            </tbody>
+            <tbody id="group-thu-2-antrua">
+                <tr class="category-row">
+                    <td colspan="6" style="text-align: left; font-weight: bold;">
+                        - Ăn trưa: <span id="total-thu-2-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
+                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'antrua', 'Ăn trưa')">+</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody id="group-thu-2-antoi">
+                <tr class="category-row">
+                    <td colspan="6" style="text-align: left; font-weight: bold;">
+                        - Ăn tối: <span id="total-thu-2-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
+                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'antoi', 'Ăn tối')">+</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody id="group-thu-2-dichuyen">
+                <tr class="category-row">
+                    <td colspan="6" style="text-align: left; font-weight: bold;">
+                        - Di chuyển: <span id="total-thu-2-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
+                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'dichuyen', 'Di chuyển')">+</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody id="group-thu-2-tietkiem">
+                <tr class="category-row">
+                    <td colspan="6" style="text-align: left; font-weight: bold;">
+                        - Tiết kiệm: <span id="total-thu-2-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
+                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'tietkiem', 'Tiết kiệm')">+</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody id="group-thu-2-khac">
+                <tr class="category-row">
+                    <td colspan="6" style="text-align: left; font-weight: bold;">
+                        - Khác: <span id="total-thu-2-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
+                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'khac', 'Khác')">+</button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -328,318 +415,172 @@
     <div id="module-thu-3" class="module">
         <div class="day-header">
             <div>Thứ 3</div>
-            <div id="ngay-thu-3">24/03/2026</div>
+            <div id="ngay-thu-3">--/--/----</div>
         </div>
-
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
+                <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
+                    <td id="summary-thu-3-ansang">0 đ</td>
+                    <td id="summary-thu-3-antrua">0 đ</td>
+                    <td id="summary-thu-3-antoi">0 đ</td>
+                    <td id="summary-thu-3-dichuyen">0 đ</td>
+                    <td id="summary-thu-3-tietkiem">0 đ</td>
+                    <td id="summary-thu-3-khac">0 đ</td>
                 </tr>
             </tbody>
         </table>
-
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
-        
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-3" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
+            <tbody id="group-thu-3-ansang">
+                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-3-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'ansang', 'Ăn sáng')">+</button></td></tr>
+            </tbody>
+            <tbody id="group-thu-3-antrua">
+                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-3-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'antrua', 'Ăn trưa')">+</button></td></tr>
+            </tbody>
+            <tbody id="group-thu-3-antoi">
+                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-3-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'antoi', 'Ăn tối')">+</button></td></tr>
+            </tbody>
+            <tbody id="group-thu-3-dichuyen">
+                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-3-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'dichuyen', 'Di chuyển')">+</button></td></tr>
+            </tbody>
+            <tbody id="group-thu-3-tietkiem">
+                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-3-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'tietkiem', 'Tiết kiệm')">+</button></td></tr>
+            </tbody>
+            <tbody id="group-thu-3-khac">
+                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-3-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'khac', 'Khác')">+</button></td></tr>
             </tbody>
         </table>
     </div>
 
     <div id="module-thu-4" class="module">
-        <div class="day-header">
-            <div>Thứ 4</div>
-            <div id="ngay-thu-4">25/03/2026</div>
-        </div>
+        <div class="day-header"><div>Thứ 4</div><div id="ngay-thu-4">--/--/----</div></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
-            <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
+            <tbody><tr><td id="summary-thu-4-ansang">0 đ</td><td id="summary-thu-4-antrua">0 đ</td><td id="summary-thu-4-antoi">0 đ</td><td id="summary-thu-4-dichuyen">0 đ</td><td id="summary-thu-4-tietkiem">0 đ</td><td id="summary-thu-4-khac">0 đ</td></tr></tbody>
         </table>
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-4" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-            </tbody>
+            <tbody id="group-thu-4-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-4-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-4-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-4-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-4-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-4-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-4-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
     <div id="module-thu-5" class="module">
-        <div class="day-header">
-            <div>Thứ 5</div>
-            <div id="ngay-thu-5">26/03/2026</div>
-        </div>
+        <div class="day-header"><div>Thứ 5</div><div id="ngay-thu-5">--/--/----</div></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
-            <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
+            <tbody><tr><td id="summary-thu-5-ansang">0 đ</td><td id="summary-thu-5-antrua">0 đ</td><td id="summary-thu-5-antoi">0 đ</td><td id="summary-thu-5-dichuyen">0 đ</td><td id="summary-thu-5-tietkiem">0 đ</td><td id="summary-thu-5-khac">0 đ</td></tr></tbody>
         </table>
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-5" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-            </tbody>
+            <tbody id="group-thu-5-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-5-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-5-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-5-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-5-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-5-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-5-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
     <div id="module-thu-6" class="module">
-        <div class="day-header">
-            <div>Thứ 6</div>
-            <div id="ngay-thu-6">27/03/2026</div>
-        </div>
+        <div class="day-header"><div>Thứ 6</div><div id="ngay-thu-6">--/--/----</div></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
-            <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
+            <tbody><tr><td id="summary-thu-6-ansang">0 đ</td><td id="summary-thu-6-antrua">0 đ</td><td id="summary-thu-6-antoi">0 đ</td><td id="summary-thu-6-dichuyen">0 đ</td><td id="summary-thu-6-tietkiem">0 đ</td><td id="summary-thu-6-khac">0 đ</td></tr></tbody>
         </table>
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-6" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-            </tbody>
+            <tbody id="group-thu-6-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-6-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-6-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-6-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-6-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-6-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-6-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
     <div id="module-thu-7" class="module">
-        <div class="day-header">
-            <div>Thứ 7</div>
-            <div id="ngay-thu-7">28/03/2026</div>
-        </div>
+        <div class="day-header"><div>Thứ 7</div><div id="ngay-thu-7">--/--/----</div></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
-            <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
+            <tbody><tr><td id="summary-thu-7-ansang">0 đ</td><td id="summary-thu-7-antrua">0 đ</td><td id="summary-thu-7-antoi">0 đ</td><td id="summary-thu-7-dichuyen">0 đ</td><td id="summary-thu-7-tietkiem">0 đ</td><td id="summary-thu-7-khac">0 đ</td></tr></tbody>
         </table>
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-7" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-            </tbody>
+            <tbody id="group-thu-7-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-7-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-7-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-7-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-7-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-7-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-7-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
     <div id="module-chua-nhat" class="module">
-        <div class="day-header">
-            <div>Chúa nhật</div>
-            <div id="ngay-chua-nhat">29/03/2026</div>
-        </div>
+        <div class="day-header"><div>Chúa nhật</div><div id="ngay-chua-nhat">--/--/----</div></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
-            <thead>
-                <tr>
-                    <th>Ăn sáng</th>
-                    <th>Ăn trưa</th>
-                    <th>Ăn tối</th>
-                    <th>Di chuyển</th>
-                    <th>Tiết kiệm</th>
-                    <th>Khác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>25.000 đ</td>
-                    <td>25.000 đ</td>
-                    <td>0 đ</td>
-                    <td>6.000 đ</td>
-                    <td>50.000 đ</td>
-                    <td>270.000 đ</td>
-                </tr>
-            </tbody>
+            <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
+            <tbody><tr><td id="summary-chua-nhat-ansang">0 đ</td><td id="summary-chua-nhat-antrua">0 đ</td><td id="summary-chua-nhat-antoi">0 đ</td><td id="summary-chua-nhat-dichuyen">0 đ</td><td id="summary-chua-nhat-tietkiem">0 đ</td><td id="summary-chua-nhat-khac">0 đ</td></tr></tbody>
         </table>
-        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: 376.000 đ</div>
+        <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-chua-nhat" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody>
-                <tr>
-                    <td style="width: 15%;">- Ăn sáng:</td>
-                    <td style="width: 40%;">Tùy chỉnh | Coop.Mart Lý Thường Kiệt</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 10%;">1</td>
-                    <td style="width: 15%;">25.000 đ</td>
-                    <td style="width: 5%;"><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Ăn trưa:</td>
-                    <td>Tùy chỉnh | Canteen B4 ĐH Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>1</td>
-                    <td>25.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-            </tbody>
+            <tbody id="group-chua-nhat-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-chua-nhat-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-chua-nhat-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-chua-nhat-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-chua-nhat-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-chua-nhat-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-chua-nhat-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
+</div>
 
+<div id="modal-expense" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeExpenseModal()">&times;</span>
+        <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:15px; font-size:1.5em;">Thêm chi phí</h2>
+        
+        <div class="form-group">
+            <label>Nội dung chi:</label>
+            <input type="text" id="exp-noidung" placeholder="VD: Bún bò">
+        </div>
+        <div class="form-group">
+            <label>Đối tượng chi:</label>
+            <input type="text" id="exp-doituong" placeholder="VD: Quán Dì 5">
+        </div>
+        <div class="form-group">
+            <label>Giá tiền (VNĐ):</label>
+            <input type="text" id="exp-giatien" value="0">
+        </div>
+        <div class="form-group">
+            <label>Số lượng:</label>
+            <input type="number" id="exp-soluong" value="1" min="1">
+        </div>
+        <div class="form-group" style="border-top: 1px solid #ccc; padding-top: 15px; margin-top: 10px;">
+            <label>Thành tiền:</label>
+            <span id="exp-thanhtien" class="total-display">0 đ</span>
+        </div>
+        
+        <button id="btn-save-expense" class="btn-save">Hoàn thành</button>
+    </div>
 </div>
 
 <script>
@@ -668,11 +609,7 @@
         document.getElementById(moduleId).classList.add("active");
     }
 
-    // --- BÀN GIAO TUẦN TRƯỚC ---
-    const inputTienMat = document.getElementById("input-tien-mat");
-    const inputNganHang = document.getElementById("input-ngan-hang");
-    const hienThiTongBanGiao = document.getElementById("hien-thi-tong-ban-giao");
-
+    // --- UTILS FORMAT ---
     function formatVND(soTien) {
         return soTien.toLocaleString('vi-VN') + ' đ';
     }
@@ -687,54 +624,49 @@
         input.value = giaTri;
     }
 
+    // --- BÀN GIAO TUẦN TRƯỚC ---
+    const inputTienMat = document.getElementById("input-tien-mat");
+    const inputNganHang = document.getElementById("input-ngan-hang");
+    const hienThiTongBanGiao = document.getElementById("hien-thi-tong-ban-giao");
+
     function tinhTongBanGiao() {
         const tienMat = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
         const nganHang = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
         hienThiTongBanGiao.textContent = formatVND(tienMat + nganHang);
     }
-
     inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
     inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
 
-    // --- XỬ LÝ NGÀY THÁNG NĂM (MODULE THỜI GIAN) ---
+    // --- XỬ LÝ NGÀY THÁNG NĂM ---
     const inputTuNgay = document.getElementById("input-tu-ngay");
     const spanDisplayTuNgay = document.getElementById("display-tu-ngay");
     const inputDenNgay = document.getElementById("input-den-ngay");
     const inputTuan = document.getElementById("input-tuan");
     const inputThangNam = document.getElementById("input-thang-nam");
 
-    // Lấy thời gian hiện tại chuẩn GMT+7
     function getGMT7Date() {
         const d = new Date();
         const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
         return new Date(utc + (3600000 * 7));
     }
-
-    // Lấy ngày Thứ 2 của tuần chứa ngày d
     function getMonday(d) {
         let dateObj = new Date(d);
         const day = dateObj.getDay();
         const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(dateObj.setDate(diff));
     }
-
-    // Định dạng YYYY-MM-DD để nhét vào value của input type="date"
     function formatToInputDate(date) {
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
         const d = String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     }
-
-    // Định dạng DD/MM/YYYY cho hiển thị Text
     function formatDisplayDate(date) {
         const d = String(date.getDate()).padStart(2, '0');
         const m = String(date.getMonth() + 1).padStart(2, '0');
         const y = date.getFullYear();
         return `${d}/${m}/${y}`;
     }
-
-    // Lấy số tuần ISO
     function getISOWeekNumber(date) {
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
         const dayNum = d.getUTCDay() || 7;
@@ -745,77 +677,142 @@
 
     function initTimeModule() {
         const today = getGMT7Date();
-        
-        // Cố định min max của ô lịch để trình duyệt không báo lỗi đỏ
-        // Chỉ chọn được các ngày nằm trong Tuần hiện tại tới Chúa Nhật Tuần sau
         const currentMonday = getMonday(today);
         let nextMonday = new Date(currentMonday);
         nextMonday.setDate(currentMonday.getDate() + 7);
-        
         let nextSunday = new Date(nextMonday);
         nextSunday.setDate(nextMonday.getDate() + 6);
 
-        // Giới hạn lịch được phép chọn
         inputTuNgay.min = formatToInputDate(currentMonday); 
         inputTuNgay.max = formatToInputDate(nextSunday);
 
-        // Mặc định nảy lên Thứ 2 tuần kế tiếp
         inputTuNgay.value = formatToInputDate(nextMonday);
         updateTimeData(nextMonday);
     }
 
     inputTuNgay.addEventListener('change', function() {
         if (!this.value) return;
-        
         let selectedDate = new Date(this.value);
         let monday = getMonday(selectedDate);
-        
-        // Ép dữ liệu về ngày thứ 2 chuẩn của tuần vừa chọn
         this.value = formatToInputDate(monday);
         updateTimeData(monday);
     });
 
     function updateTimeData(monday) {
-        // 1. Cập nhật ngày hiển thị đè (dd/mm/yyyy) lên trên ô date
         spanDisplayTuNgay.textContent = formatDisplayDate(monday);
 
-        // 2. Đến ngày
         let sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
         inputDenNgay.value = formatDisplayDate(sunday);
-
-        // 3. Tuần
         inputTuan.value = getISOWeekNumber(monday);
 
-        // 4. Tháng / Năm
-        const mMon = monday.getMonth() + 1;
-        const yMon = monday.getFullYear();
-        const mSun = sunday.getMonth() + 1;
-        const ySun = sunday.getFullYear();
-
+        const mMon = monday.getMonth() + 1, yMon = monday.getFullYear();
+        const mSun = sunday.getMonth() + 1, ySun = sunday.getFullYear();
         if (yMon === ySun) {
-            if (mMon === mSun) {
-                inputThangNam.value = `Tháng ${mMon} / Năm ${yMon}`;
-            } else {
-                inputThangNam.value = `Tháng ${mMon} | ${mSun} / Năm ${yMon}`;
-            }
+            inputThangNam.value = (mMon === mSun) ? `Tháng ${mMon} / Năm ${yMon}` : `Tháng ${mMon} | ${mSun} / Năm ${yMon}`;
         } else {
             inputThangNam.value = `Tháng ${mMon} / Năm ${yMon} - Tháng ${mSun} / Năm ${ySun}`;
         }
 
-        // 5. Cập nhật tiêu đề ngày (Thứ 2 -> CN)
+        const daysMap = ['ngay-thu-2', 'ngay-thu-3', 'ngay-thu-4', 'ngay-thu-5', 'ngay-thu-6', 'ngay-thu-7', 'ngay-chua-nhat'];
         for (let i = 0; i <= 6; i++) {
             let nextDay = new Date(monday);
             nextDay.setDate(monday.getDate() + i);
-            let targetId;
-            if (i === 6) {
-                targetId = 'ngay-chua-nhat';
-            } else {
-                targetId = `ngay-thu-${i+2}`; // Map i=0 tới ngay-thu-2, i=1 tới ngay-thu-3,...
-            }
-            let el = document.getElementById(targetId);
+            let el = document.getElementById(daysMap[i]);
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
+    }
+
+    // --- XỬ LÝ NHẬP LIỆU (MODAL THÊM CHI PHÍ) ---
+    let activeDay = '';
+    let activeCategory = '';
+
+    function openExpenseModal(day, category, categoryName) {
+        activeDay = day;
+        activeCategory = category;
+        document.getElementById('expense-modal-title').innerText = 'Thêm chi phí: ' + categoryName;
+        
+        // Reset form
+        document.getElementById('exp-noidung').value = '';
+        document.getElementById('exp-doituong').value = '';
+        document.getElementById('exp-giatien').value = '0';
+        document.getElementById('exp-soluong').value = '1';
+        calcExpenseTotal();
+        
+        document.getElementById('modal-expense').style.display = 'block';
+    }
+
+    function closeExpenseModal() {
+        document.getElementById('modal-expense').style.display = 'none';
+    }
+
+    function calcExpenseTotal() {
+        let gia = parseFloat(document.getElementById('exp-giatien').value.replace(/,/g, '')) || 0;
+        let sl = parseFloat(document.getElementById('exp-soluong').value) || 0;
+        let total = gia * sl;
+        document.getElementById('exp-thanhtien').innerText = formatVND(total);
+        return total;
+    }
+
+    document.getElementById('exp-giatien').addEventListener('input', function() {
+        dinhDangDauPhay(this);
+        calcExpenseTotal();
+    });
+    document.getElementById('exp-soluong').addEventListener('input', calcExpenseTotal);
+
+    document.getElementById('btn-save-expense').addEventListener('click', function() {
+        let nd = document.getElementById('exp-noidung').value.trim();
+        let dt = document.getElementById('exp-doituong').value.trim();
+        let gia = parseFloat(document.getElementById('exp-giatien').value.replace(/,/g, '')) || 0;
+        let sl = parseFloat(document.getElementById('exp-soluong').value) || 0;
+        let total = gia * sl;
+        
+        let combinedName = nd;
+        if(dt !== '') {
+            combinedName = combinedName ? combinedName + " | " + dt : dt;
+        }
+        if (combinedName === '') combinedName = '...';
+        
+        // Thêm vào bảng (Nội dung chi| Đối tượng chi | Giá tiền | Số lượng | Thành tiền)
+        let tbody = document.getElementById(`group-${activeDay}-${activeCategory}`);
+        let tr = document.createElement('tr');
+        tr.setAttribute('data-value', total);
+        tr.innerHTML = `
+            <td style="width: 5%; color:#888;">-</td>
+            <td style="width: 40%;">${combinedName}</td>
+            <td style="width: 15%;">${formatVND(gia)}</td>
+            <td style="width: 10%;">${sl}</td>
+            <td style="width: 15%;">${formatVND(total)}</td>
+            <td style="width: 5%;"><input type="checkbox"></td>
+        `;
+        tbody.appendChild(tr);
+        
+        updateDayTotals(activeDay);
+        closeExpenseModal();
+    });
+
+    function updateDayTotals(day) {
+        const categories = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
+        let dayTotal = 0;
+        
+        categories.forEach(cat => {
+            let tbody = document.getElementById(`group-${day}-${cat}`);
+            let rows = tbody.querySelectorAll('tr[data-value]');
+            let catTotal = 0;
+            rows.forEach(r => {
+                catTotal += parseFloat(r.getAttribute('data-value')) || 0;
+            });
+            
+            // Cập nhật Trường dữ liệu: Tổng số tiền (ở Tiêu đề Diễn giải)
+            document.getElementById(`total-${day}-${cat}`).innerText = formatVND(catTotal);
+            // Cập nhật Bảng Kế Hoạch phía trên
+            document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(catTotal);
+            
+            dayTotal += catTotal;
+        });
+        
+        // Cập nhật Tổng chi dự kiến của ngày
+        document.getElementById(`tong-chi-${day}`).innerText = formatVND(dayTotal);
     }
 
     window.onload = function() {
