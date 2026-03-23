@@ -95,13 +95,19 @@
         }
         .form-group label {
             font-weight: bold;
+            flex: 1;
         }
         .form-group input {
             padding: 8px;
-            width: 180px;
+            width: 200px;
             text-align: right;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-family: inherit;
+        }
+        .form-group input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
         }
         .total-display {
             font-weight: bold;
@@ -188,31 +194,27 @@
         <h2 class="module-title">Thông Tin Thời Gian</h2>
         
         <div class="form-group">
+            <label>Từ ngày (Thứ 2):</label>
+            <input type="date" id="input-tu-ngay">
+        </div>
+        <div class="form-group">
+            <label>Đến ngày (Chúa nhật):</label>
+            <input type="text" id="input-den-ngay" readonly>
+        </div>
+        <div class="form-group">
             <label>Tuần:</label>
-            <input type="number" value="13" style="text-align: left;">
+            <input type="text" id="input-tuan" readonly>
         </div>
         <div class="form-group">
             <label>Tháng/Năm:</label>
-            <input type="text" value="3/2026" style="text-align: left;">
-        </div>
-        <div class="form-group">
-            <label>Từ ngày:</label>
-            <input type="text" value="23/03/2026" style="text-align: left;">
-        </div>
-        <div class="form-group">
-            <label>Đến ngày:</label>
-            <input type="text" value="29/03/2026" style="text-align: left;">
-        </div>
-        <div class="form-group" style="border-top: 1px solid #ccc; padding-top: 15px;">
-            <label>Tổng chi tuần dự kiến:</label>
-            <input type="text" value="1,087,000" id="tong-chi-du-kien">
+            <input type="text" id="input-thang-nam" readonly>
         </div>
     </div>
 
     <div id="module-thu-3" class="module">
         <div class="day-header">
             <div>Thứ 3</div>
-            <div>24/03/2026</div>
+            <div id="ngay-thu-3">24/03/2026</div>
         </div>
 
         <div class="bold-text">* Kế hoạch</div>
@@ -260,46 +262,6 @@
                     <td>25.000 đ</td>
                     <td><input type="checkbox"></td>
                 </tr>
-                <tr>
-                    <td>- Ăn tối:</td>
-                    <td>Tùy chỉnh | Canteen KTX Bách khoa</td>
-                    <td>25.000 đ</td>
-                    <td>0</td>
-                    <td>0 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Di chuyển:</td>
-                    <td><span class="bold-text">6.000 đ</span></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>+ Tuyến 08 | FutaBus</td>
-                    <td>3.000 đ</td>
-                    <td>2</td>
-                    <td>6.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Tiết kiệm:</td>
-                    <td>STK29102024 | OCB</td>
-                    <td>50.000 đ</td>
-                    <td>1</td>
-                    <td>50.000 đ</td>
-                    <td><input type="checkbox"></td>
-                </tr>
-                <tr>
-                    <td>- Khác:</td>
-                    <td>270.000 đ</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
             </tbody>
         </table>
     </div>
@@ -307,7 +269,7 @@
     <div id="module-thu-4" class="module">
         <div class="day-header">
             <div>Thứ 4</div>
-            <div>25/03/2026</div>
+            <div id="ngay-thu-4">25/03/2026</div>
         </div>
         <p style="text-align: center; color: #888;">Nội dung của Thứ 4</p>
     </div>
@@ -315,7 +277,7 @@
     <div id="module-thu-5" class="module">
         <div class="day-header">
             <div>Thứ 5</div>
-            <div>26/03/2026</div>
+            <div id="ngay-thu-5">26/03/2026</div>
         </div>
         <p style="text-align: center; color: #888;">Nội dung của Thứ 5</p>
     </div>
@@ -323,7 +285,7 @@
     <div id="module-thu-6" class="module">
         <div class="day-header">
             <div>Thứ 6</div>
-            <div>27/03/2026</div>
+            <div id="ngay-thu-6">27/03/2026</div>
         </div>
         <p style="text-align: center; color: #888;">Nội dung của Thứ 6</p>
     </div>
@@ -331,7 +293,7 @@
     <div id="module-thu-7" class="module">
         <div class="day-header">
             <div>Thứ 7</div>
-            <div>28/03/2026</div>
+            <div id="ngay-thu-7">28/03/2026</div>
         </div>
         <p style="text-align: center; color: #888;">Nội dung của Thứ 7</p>
     </div>
@@ -339,7 +301,7 @@
     <div id="module-chua-nhat" class="module">
         <div class="day-header">
             <div>Chúa nhật</div>
-            <div>29/03/2026</div>
+            <div id="ngay-chua-nhat">29/03/2026</div>
         </div>
         <p style="text-align: center; color: #888;">Nội dung của Chúa nhật</p>
     </div>
@@ -347,7 +309,7 @@
 </div>
 
 <script>
-    // --- XỬ LÝ MENU DROPDOWN ---
+    // --- MENU DROPDOWN ---
     function toggleMenu() {
         document.getElementById("myDropdown").classList.toggle("show");
     }
@@ -356,26 +318,23 @@
         if (!event.target.matches('.menu-btn')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
             for (var i = 0; i < dropdowns.length; i++) {
-                var openDropdown = dropdowns[i];
-                if (openDropdown.classList.contains('show')) {
-                    openDropdown.classList.remove('show');
+                if (dropdowns[i].classList.contains('show')) {
+                    dropdowns[i].classList.remove('show');
                 }
             }
         }
     }
 
-    // --- XỬ LÝ CHUYỂN ĐỔI MODULE ---
+    // --- CHUYỂN MODULE ---
     function switchModule(moduleId) {
-        // Ẩn tất cả các module
         var modules = document.getElementsByClassName("module");
         for (var i = 0; i < modules.length; i++) {
             modules[i].classList.remove("active");
         }
-        // Hiện module được chọn
         document.getElementById(moduleId).classList.add("active");
     }
 
-    // --- XỬ LÝ BÀN GIAO TUẦN TRƯỚC ---
+    // --- BÀN GIAO TUẦN TRƯỚC ---
     const inputTienMat = document.getElementById("input-tien-mat");
     const inputNganHang = document.getElementById("input-ngan-hang");
     const hienThiTongBanGiao = document.getElementById("hien-thi-tong-ban-giao");
@@ -397,25 +356,121 @@
     function tinhTongBanGiao() {
         const tienMat = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
         const nganHang = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
-        const tongCong = tienMat + nganHang;
-        hienThiTongBanGiao.textContent = formatVND(tongCong);
+        hienThiTongBanGiao.textContent = formatVND(tienMat + nganHang);
     }
 
-    inputTienMat.addEventListener("input", function() {
-        dinhDangDauPhay(this);
-        tinhTongBanGiao();
+    inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
+    inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
+
+    // --- XỬ LÝ NGÀY THÁNG NĂM (MODULE THỜI GIAN) ---
+    const inputTuNgay = document.getElementById("input-tu-ngay");
+    const inputDenNgay = document.getElementById("input-den-ngay");
+    const inputTuan = document.getElementById("input-tuan");
+    const inputThangNam = document.getElementById("input-thang-nam");
+
+    // Lấy thời gian hiện tại chuẩn GMT+7
+    function getGMT7Date() {
+        const d = new Date();
+        const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        return new Date(utc + (3600000 * 7));
+    }
+
+    // Lấy ngày Thứ 2 của một tuần bất kỳ
+    function getMonday(d) {
+        d = new Date(d);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Điều chỉnh nếu ngày là Chúa nhật
+        return new Date(d.setDate(diff));
+    }
+
+    // Format ngày sang dạng chuỗi YYYY-MM-DD để gán vào input type="date"
+    function formatToInputDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    // Format hiển thị ngày DD/MM/YYYY
+    function formatDisplayDate(date) {
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
+    // Tính số tuần chuẩn ISO 8601
+    function getISOWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+    }
+
+    // Khởi tạo thời gian lúc mở trang: Chọn Thứ 2 gần nhất của tuần kế tiếp
+    function initTimeModule() {
+        const today = getGMT7Date();
+        let nextMonday = new Date(today);
+        nextMonday.setDate(today.getDate() + ((7 - today.getDay() + 1) % 7 || 7));
+        
+        // Setup Từ ngày
+        inputTuNgay.value = formatToInputDate(nextMonday);
+        updateTimeData(nextMonday);
+    }
+
+    // Xử lý logic mỗi khi Từ ngày thay đổi
+    inputTuNgay.addEventListener('change', function() {
+        if (!this.value) return;
+        
+        let selectedDate = new Date(this.value);
+        let monday = getMonday(selectedDate);
+        
+        // Tự động snap về ngày thứ 2 nếu người dùng chọn ngày khác
+        this.value = formatToInputDate(monday);
+        updateTimeData(monday);
     });
 
-    inputNganHang.addEventListener("input", function() {
-        dinhDangDauPhay(this);
-        tinhTongBanGiao();
-    });
+    // Hàm cập nhật các ô dữ liệu Thời gian & Tiêu đề các ngày
+    function updateTimeData(monday) {
+        // Đến ngày (Chúa nhật)
+        let sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        inputDenNgay.value = formatDisplayDate(sunday);
 
-    // --- XỬ LÝ FORMAT ĐẦU VÀO TRANG THỜI GIAN ---
-    const inputTongChi = document.getElementById("tong-chi-du-kien");
-    inputTongChi.addEventListener("input", function() {
-        dinhDangDauPhay(this);
-    });
+        // Tuần chuẩn ISO
+        inputTuan.value = getISOWeekNumber(monday);
+
+        // Tháng / Năm
+        const mMon = monday.getMonth() + 1;
+        const yMon = monday.getFullYear();
+        const mSun = sunday.getMonth() + 1;
+        const ySun = sunday.getFullYear();
+
+        if (yMon === ySun) {
+            if (mMon === mSun) {
+                inputThangNam.value = `Tháng ${mMon} / Năm ${yMon}`;
+            } else {
+                inputThangNam.value = `Tháng ${mMon} | ${mSun} / Năm ${yMon}`;
+            }
+        } else {
+            inputThangNam.value = `Tháng ${mMon} / Năm ${yMon} - Tháng ${mSun} / Năm ${ySun}`;
+        }
+
+        // Cập nhật tiêu đề hiển thị các ngày ở các module bên dưới (Thứ 3 -> CN)
+        for (let i = 1; i <= 6; i++) {
+            let nextDay = new Date(monday);
+            nextDay.setDate(monday.getDate() + i);
+            let targetId = i === 6 ? 'ngay-chua-nhat' : `ngay-thu-${i+2}`;
+            let el = document.getElementById(targetId);
+            if(el) el.innerText = formatDisplayDate(nextDay);
+        }
+    }
+
+    // Chạy khởi tạo khi load trang
+    window.onload = function() {
+        initTimeModule();
+    };
 
 </script>
 
