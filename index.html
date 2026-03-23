@@ -274,12 +274,12 @@
         
         <div class="modal-group">
             <label for="input-tien-mat">Tiền mặt (VNĐ):</label>
-            <input type="number" id="input-tien-mat" value="0" min="0">
+            <input type="text" id="input-tien-mat" value="0">
         </div>
         
         <div class="modal-group">
             <label for="input-ngan-hang">Ngân hàng (VNĐ):</label>
-            <input type="number" id="input-ngan-hang" value="0" min="0">
+            <input type="text" id="input-ngan-hang" value="0">
         </div>
         
         <div class="modal-group modal-total">
@@ -292,7 +292,6 @@
 </div>
 
 <script>
-    // Lấy các element
     const modal = document.getElementById("modal-nhap-so-du");
     const btnMoModal = document.getElementById("btn-ban-giao");
     const nutDongModal = document.getElementsByClassName("close")[0];
@@ -304,43 +303,53 @@
     const btnLuu = document.getElementById("btn-luu");
     const hienThiSoDu = document.getElementById("hien-thi-so-du");
 
-    // Hàm định dạng số tiền sang chuẩn VNĐ
     function formatVND(soTien) {
         return soTien.toLocaleString('vi-VN') + ' đ';
     }
 
-    // Hàm tính tổng trong modal
+    function dinhDangDauPhay(input) {
+        let giaTri = input.value.replace(/\D/g, ''); 
+        if (giaTri !== '') {
+            giaTri = parseInt(giaTri, 10).toLocaleString('en-US'); 
+        } else {
+            giaTri = '0';
+        }
+        input.value = giaTri;
+    }
+
     function tinhTong() {
-        const tienMat = parseFloat(inputTienMat.value) || 0;
-        const nganHang = parseFloat(inputNganHang.value) || 0;
+        const tienMat = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
+        const nganHang = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
         const tongCong = tienMat + nganHang;
         hienThiTongModal.textContent = formatVND(tongCong);
         return tongCong;
     }
 
-    // Lắng nghe sự kiện khi người dùng gõ số
-    inputTienMat.addEventListener("input", tinhTong);
-    inputNganHang.addEventListener("input", tinhTong);
+    inputTienMat.addEventListener("input", function() {
+        dinhDangDauPhay(this);
+        tinhTong();
+    });
 
-    // Mở modal
+    inputNganHang.addEventListener("input", function() {
+        dinhDangDauPhay(this);
+        tinhTong();
+    });
+
     btnMoModal.onclick = function() {
         modal.style.display = "block";
-        tinhTong(); // Tính lại tổng mỗi lần mở
+        tinhTong();
     }
 
-    // Đóng modal bằng nút X
     nutDongModal.onclick = function() {
         modal.style.display = "none";
     }
 
-    // Đóng modal khi bấm ra ngoài khoảng trắng
     window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
     }
 
-    // Xử lý khi bấm nút Lưu
     btnLuu.onclick = function() {
         const tongCong = tinhTong();
         hienThiSoDu.textContent = formatVND(tongCong);
