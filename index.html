@@ -753,7 +753,7 @@
         for (let i = 0; i < daysArr.length; i++) {
             let nextDay = new Date(monday);
             // i=0 tương ứng Thứ 3, monday + 1 = Thứ 3
-            nextDay.setDate(monday.getDate() + i + 1); 
+            nextDay.setDate(monday.getDate() + i + 0); 
             let el = document.getElementById(`ngay-${daysArr[i]}`);
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
