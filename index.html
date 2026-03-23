@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
+        /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
             font-size: 16px;
@@ -13,6 +14,7 @@
             color: #000;
         }
         
+        /* Navbar & Menu */
         .navbar {
             background-color: #2c3e50;
             color: white;
@@ -62,6 +64,7 @@
             display: block;
         }
 
+        /* Container & Modules */
         .container {
             max-width: 900px;
             margin: 30px auto;
@@ -88,6 +91,7 @@
             font-size: 20px;
         }
 
+        /* Form Inputs cho Bàn giao & Thời gian */
         .form-group {
             display: flex;
             justify-content: space-between;
@@ -122,6 +126,7 @@
             color: #d32f2f;
         }
 
+        /* Hack CSS để ghi đè format ngày tháng thành dd/mm/yyyy */
         .date-wrapper {
             position: relative;
             width: 200px;
@@ -159,6 +164,7 @@
             pointer-events: none; 
         }
 
+        /* Tables cho các ngày */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -181,10 +187,10 @@
             border-bottom: 1px dashed #ccc;
             text-align: left;
         }
-        .details-table td:nth-child(n+3) {
+        .details-table td:nth-child(n+3), .details-table td:nth-child(4) {
             text-align: right;
         }
-        .details-table td:last-child {
+        .details-table td:nth-child(n+5) {
             text-align: center;
         }
         .bold-text {
@@ -230,13 +236,15 @@
             width: 100%; 
             height: 100%; 
             background-color: rgba(0,0,0,0.5); 
+            overflow: auto;
         }
         .modal-content {
             background-color: #fff;
             margin: 5% auto; 
             padding: 25px;
             border: 1px solid #888;
-            width: 450px;
+            width: 850px;
+            max-width: 95%;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
@@ -268,13 +276,48 @@
         .btn-save:hover {
             background-color: #1a252f;
         }
-        .modal .form-group input {
-            width: 250px;
-            text-align: left;
+        
+        /* Bảng bên trong Modal */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
         }
-        .modal .form-group input[type="number"], .modal .form-group input[id="exp-giatien"] {
-            text-align: right;
+        .modal-table th, .modal-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
         }
+        .modal-table input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            padding: 5px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 15px;
+        }
+        .btn-add-row {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold;
+        }
+        .btn-add-row:hover { background-color: #45a049; }
+        .btn-remove-row {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .btn-remove-row:hover { background-color: #e60000; }
     </style>
 </head>
 <body>
@@ -361,54 +404,12 @@
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-2" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-thu-2-ansang">
-                <tr class="category-row">
-                    <td colspan="6" style="text-align: left; font-weight: bold;">
-                        - Ăn sáng: <span id="total-thu-2-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
-                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'ansang', 'Ăn sáng')">+</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody id="group-thu-2-antrua">
-                <tr class="category-row">
-                    <td colspan="6" style="text-align: left; font-weight: bold;">
-                        - Ăn trưa: <span id="total-thu-2-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
-                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'antrua', 'Ăn trưa')">+</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody id="group-thu-2-antoi">
-                <tr class="category-row">
-                    <td colspan="6" style="text-align: left; font-weight: bold;">
-                        - Ăn tối: <span id="total-thu-2-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
-                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'antoi', 'Ăn tối')">+</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody id="group-thu-2-dichuyen">
-                <tr class="category-row">
-                    <td colspan="6" style="text-align: left; font-weight: bold;">
-                        - Di chuyển: <span id="total-thu-2-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
-                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'dichuyen', 'Di chuyển')">+</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody id="group-thu-2-tietkiem">
-                <tr class="category-row">
-                    <td colspan="6" style="text-align: left; font-weight: bold;">
-                        - Tiết kiệm: <span id="total-thu-2-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
-                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'tietkiem', 'Tiết kiệm')">+</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody id="group-thu-2-khac">
-                <tr class="category-row">
-                    <td colspan="6" style="text-align: left; font-weight: bold;">
-                        - Khác: <span id="total-thu-2-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span>
-                        <button class="btn-add" onclick="openExpenseModal('thu-2', 'khac', 'Khác')">+</button>
-                    </td>
-                </tr>
-            </tbody>
+            <tbody id="group-thu-2-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-2-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-2', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-2-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-2-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-2', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-2-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-2-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-2', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-2-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-2-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-2', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-2-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-2-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-2', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-2-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-2-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-2', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
@@ -436,24 +437,12 @@
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-3" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-thu-3-ansang">
-                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-3-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'ansang', 'Ăn sáng')">+</button></td></tr>
-            </tbody>
-            <tbody id="group-thu-3-antrua">
-                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-3-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'antrua', 'Ăn trưa')">+</button></td></tr>
-            </tbody>
-            <tbody id="group-thu-3-antoi">
-                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-3-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'antoi', 'Ăn tối')">+</button></td></tr>
-            </tbody>
-            <tbody id="group-thu-3-dichuyen">
-                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-3-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'dichuyen', 'Di chuyển')">+</button></td></tr>
-            </tbody>
-            <tbody id="group-thu-3-tietkiem">
-                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-3-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'tietkiem', 'Tiết kiệm')">+</button></td></tr>
-            </tbody>
-            <tbody id="group-thu-3-khac">
-                <tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-3-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-3', 'khac', 'Khác')">+</button></td></tr>
-            </tbody>
+            <tbody id="group-thu-3-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-3-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-3', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-3-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-3-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-3', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-3-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-3-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-3', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-3-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-3-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-3', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-3-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-3-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-3', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-3-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-3-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-3', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
@@ -462,17 +451,26 @@
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
-            <tbody><tr><td id="summary-thu-4-ansang">0 đ</td><td id="summary-thu-4-antrua">0 đ</td><td id="summary-thu-4-antoi">0 đ</td><td id="summary-thu-4-dichuyen">0 đ</td><td id="summary-thu-4-tietkiem">0 đ</td><td id="summary-thu-4-khac">0 đ</td></tr></tbody>
+            <tbody>
+                <tr>
+                    <td id="summary-thu-4-ansang">0 đ</td>
+                    <td id="summary-thu-4-antrua">0 đ</td>
+                    <td id="summary-thu-4-antoi">0 đ</td>
+                    <td id="summary-thu-4-dichuyen">0 đ</td>
+                    <td id="summary-thu-4-tietkiem">0 đ</td>
+                    <td id="summary-thu-4-khac">0 đ</td>
+                </tr>
+            </tbody>
         </table>
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-4" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-thu-4-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-4-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
-            <tbody id="group-thu-4-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-4-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
-            <tbody id="group-thu-4-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-4-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
-            <tbody id="group-thu-4-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-4-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
-            <tbody id="group-thu-4-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-4-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
-            <tbody id="group-thu-4-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-4-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-4', 'khac', 'Khác')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-4-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-4', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-4-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-4', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-4-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-4', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-4-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-4', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-4-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-4', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-4-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-4-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-4', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
@@ -481,17 +479,26 @@
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
-            <tbody><tr><td id="summary-thu-5-ansang">0 đ</td><td id="summary-thu-5-antrua">0 đ</td><td id="summary-thu-5-antoi">0 đ</td><td id="summary-thu-5-dichuyen">0 đ</td><td id="summary-thu-5-tietkiem">0 đ</td><td id="summary-thu-5-khac">0 đ</td></tr></tbody>
+            <tbody>
+                <tr>
+                    <td id="summary-thu-5-ansang">0 đ</td>
+                    <td id="summary-thu-5-antrua">0 đ</td>
+                    <td id="summary-thu-5-antoi">0 đ</td>
+                    <td id="summary-thu-5-dichuyen">0 đ</td>
+                    <td id="summary-thu-5-tietkiem">0 đ</td>
+                    <td id="summary-thu-5-khac">0 đ</td>
+                </tr>
+            </tbody>
         </table>
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-5" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-thu-5-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-5-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
-            <tbody id="group-thu-5-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-5-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
-            <tbody id="group-thu-5-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-5-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
-            <tbody id="group-thu-5-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-5-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
-            <tbody id="group-thu-5-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-5-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
-            <tbody id="group-thu-5-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-5-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-5', 'khac', 'Khác')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-5-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-5', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-5-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-5', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-5-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-5', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-5-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-5', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-5-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-5', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-5-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-5-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-5', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
@@ -500,17 +507,26 @@
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
-            <tbody><tr><td id="summary-thu-6-ansang">0 đ</td><td id="summary-thu-6-antrua">0 đ</td><td id="summary-thu-6-antoi">0 đ</td><td id="summary-thu-6-dichuyen">0 đ</td><td id="summary-thu-6-tietkiem">0 đ</td><td id="summary-thu-6-khac">0 đ</td></tr></tbody>
+            <tbody>
+                <tr>
+                    <td id="summary-thu-6-ansang">0 đ</td>
+                    <td id="summary-thu-6-antrua">0 đ</td>
+                    <td id="summary-thu-6-antoi">0 đ</td>
+                    <td id="summary-thu-6-dichuyen">0 đ</td>
+                    <td id="summary-thu-6-tietkiem">0 đ</td>
+                    <td id="summary-thu-6-khac">0 đ</td>
+                </tr>
+            </tbody>
         </table>
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-6" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-thu-6-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-6-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
-            <tbody id="group-thu-6-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-6-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
-            <tbody id="group-thu-6-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-6-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
-            <tbody id="group-thu-6-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-6-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
-            <tbody id="group-thu-6-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-6-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
-            <tbody id="group-thu-6-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-6-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-6', 'khac', 'Khác')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-6-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-6', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-6-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-6', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-6-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-6', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-6-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-6', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-6-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-6', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-6-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-6-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-6', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
@@ -519,17 +535,26 @@
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
-            <tbody><tr><td id="summary-thu-7-ansang">0 đ</td><td id="summary-thu-7-antrua">0 đ</td><td id="summary-thu-7-antoi">0 đ</td><td id="summary-thu-7-dichuyen">0 đ</td><td id="summary-thu-7-tietkiem">0 đ</td><td id="summary-thu-7-khac">0 đ</td></tr></tbody>
+            <tbody>
+                <tr>
+                    <td id="summary-thu-7-ansang">0 đ</td>
+                    <td id="summary-thu-7-antrua">0 đ</td>
+                    <td id="summary-thu-7-antoi">0 đ</td>
+                    <td id="summary-thu-7-dichuyen">0 đ</td>
+                    <td id="summary-thu-7-tietkiem">0 đ</td>
+                    <td id="summary-thu-7-khac">0 đ</td>
+                </tr>
+            </tbody>
         </table>
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-thu-7" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-thu-7-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-7-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
-            <tbody id="group-thu-7-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-7-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
-            <tbody id="group-thu-7-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-7-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
-            <tbody id="group-thu-7-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-7-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
-            <tbody id="group-thu-7-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-7-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
-            <tbody id="group-thu-7-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-7-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('thu-7', 'khac', 'Khác')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-thu-7-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-7', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-thu-7-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-7', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-thu-7-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-7', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-thu-7-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-7', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-thu-7-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-7', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-thu-7-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-thu-7-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('thu-7', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 
@@ -538,17 +563,26 @@
         <div class="bold-text" style="margin-bottom: 5px;">* Kế hoạch:</div>
         <table>
             <thead><tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr></thead>
-            <tbody><tr><td id="summary-chua-nhat-ansang">0 đ</td><td id="summary-chua-nhat-antrua">0 đ</td><td id="summary-chua-nhat-antoi">0 đ</td><td id="summary-chua-nhat-dichuyen">0 đ</td><td id="summary-chua-nhat-tietkiem">0 đ</td><td id="summary-chua-nhat-khac">0 đ</td></tr></tbody>
+            <tbody>
+                <tr>
+                    <td id="summary-chua-nhat-ansang">0 đ</td>
+                    <td id="summary-chua-nhat-antrua">0 đ</td>
+                    <td id="summary-chua-nhat-antoi">0 đ</td>
+                    <td id="summary-chua-nhat-dichuyen">0 đ</td>
+                    <td id="summary-chua-nhat-tietkiem">0 đ</td>
+                    <td id="summary-chua-nhat-khac">0 đ</td>
+                </tr>
+            </tbody>
         </table>
         <div class="bold-text" style="margin-bottom: 15px;">* Tổng chi dự kiến: <span id="tong-chi-chua-nhat" style="color: #d32f2f;">0 đ</span></div>
         <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
         <table class="details-table">
-            <tbody id="group-chua-nhat-ansang"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-chua-nhat-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
-            <tbody id="group-chua-nhat-antrua"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-chua-nhat-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
-            <tbody id="group-chua-nhat-antoi"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-chua-nhat-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
-            <tbody id="group-chua-nhat-dichuyen"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-chua-nhat-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
-            <tbody id="group-chua-nhat-tietkiem"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-chua-nhat-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
-            <tbody id="group-chua-nhat-khac"><tr class="category-row"><td colspan="6" style="text-align: left; font-weight: bold;">- Khác: <span id="total-chua-nhat-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span> <button class="btn-add" onclick="openExpenseModal('chua-nhat', 'khac', 'Khác')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-ansang"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn sáng: <span id="total-chua-nhat-ansang" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('chua-nhat', 'ansang', 'Ăn sáng')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-antrua"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn trưa: <span id="total-chua-nhat-antrua" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('chua-nhat', 'antrua', 'Ăn trưa')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-antoi"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Ăn tối: <span id="total-chua-nhat-antoi" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('chua-nhat', 'antoi', 'Ăn tối')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-dichuyen"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Di chuyển: <span id="total-chua-nhat-dichuyen" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('chua-nhat', 'dichuyen', 'Di chuyển')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-tietkiem"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Tiết kiệm: <span id="total-chua-nhat-tietkiem" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('chua-nhat', 'tietkiem', 'Tiết kiệm')">+</button></td></tr></tbody>
+            <tbody id="group-chua-nhat-khac"><tr class="category-row"><td colspan="5" style="text-align: left; font-weight: bold;">- Khác: <span id="total-chua-nhat-khac" style="color: #d32f2f; margin-left: 5px;">0 đ</span><button class="btn-add" onclick="openExpenseModal('chua-nhat', 'khac', 'Khác')">+</button></td></tr></tbody>
         </table>
     </div>
 </div>
@@ -556,39 +590,49 @@
 <div id="modal-expense" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeExpenseModal()">&times;</span>
-        <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:15px; font-size:1.5em;">Thêm chi phí</h2>
+        <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Thêm chi phí</h2>
         
-        <div class="form-group">
-            <label>Nội dung chi:</label>
-            <input type="text" id="exp-noidung" placeholder="VD: Bún bò">
-        </div>
-        <div class="form-group">
-            <label>Đối tượng chi:</label>
-            <input type="text" id="exp-doituong" placeholder="VD: Quán Dì 5">
-        </div>
-        <div class="form-group">
-            <label>Giá tiền (VNĐ):</label>
-            <input type="text" id="exp-giatien" value="0">
-        </div>
-        <div class="form-group">
-            <label>Số lượng:</label>
-            <input type="number" id="exp-soluong" value="1" min="1">
-        </div>
-        <div class="form-group" style="border-top: 1px solid #ccc; padding-top: 15px; margin-top: 10px;">
-            <label>Thành tiền:</label>
-            <span id="exp-thanhtien" class="total-display">0 đ</span>
-        </div>
+        <table class="modal-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">STT</th>
+                    <th style="width: 25%;">Nội dung chi</th>
+                    <th style="width: 25%;">Đối tượng chi</th>
+                    <th style="width: 15%;">Giá tiền (VNĐ)</th>
+                    <th style="width: 10%;">SL</th>
+                    <th style="width: 15%;">Thành tiền</th>
+                    <th style="width: 5%;">Xóa</th>
+                </tr>
+            </thead>
+            <tbody id="modal-expense-tbody">
+                </tbody>
+        </table>
         
+        <button type="button" class="btn-add-row" onclick="addModalRow()">+ Thêm dòng</button>
         <button id="btn-save-expense" class="btn-save">Hoàn thành</button>
     </div>
 </div>
 
 <script>
+    // --- KHỞI TẠO CẤU TRÚC DỮ LIỆU ---
+    const daysArr = ['thu-2', 'thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
+    const catsArr = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
+    
+    let expenseData = {};
+    daysArr.forEach(d => {
+        expenseData[d] = {};
+        catsArr.forEach(c => {
+            expenseData[d][c] = []; 
+        });
+    });
+
+    let currentDay = '';
+    let currentCat = '';
+
     // --- MENU DROPDOWN ---
     function toggleMenu() {
         document.getElementById("myDropdown").classList.toggle("show");
     }
-
     window.onclick = function(event) {
         if (!event.target.matches('.menu-btn')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
@@ -613,13 +657,12 @@
     function formatVND(soTien) {
         return soTien.toLocaleString('vi-VN') + ' đ';
     }
-
     function dinhDangDauPhay(input) {
         let giaTri = input.value.replace(/\D/g, ''); 
         if (giaTri !== '') {
             giaTri = parseInt(giaTri, 10).toLocaleString('en-US'); 
         } else {
-            giaTri = '0';
+            giaTri = '';
         }
         input.value = giaTri;
     }
@@ -700,7 +743,6 @@
 
     function updateTimeData(monday) {
         spanDisplayTuNgay.textContent = formatDisplayDate(monday);
-
         let sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
         inputDenNgay.value = formatDisplayDate(sunday);
@@ -723,21 +765,21 @@
         }
     }
 
-    // --- XỬ LÝ NHẬP LIỆU (MODAL THÊM CHI PHÍ) ---
-    let activeDay = '';
-    let activeCategory = '';
-
-    function openExpenseModal(day, category, categoryName) {
-        activeDay = day;
-        activeCategory = category;
-        document.getElementById('expense-modal-title').innerText = 'Thêm chi phí: ' + categoryName;
+    // --- MODAL DẠNG BẢNG (THÊM / SỬA CHI PHÍ) ---
+    function openExpenseModal(day, cat, titleName) {
+        currentDay = day;
+        currentCat = cat;
+        document.getElementById('expense-modal-title').innerText = 'Điều chỉnh chi phí: ' + titleName;
         
-        // Reset form
-        document.getElementById('exp-noidung').value = '';
-        document.getElementById('exp-doituong').value = '';
-        document.getElementById('exp-giatien').value = '0';
-        document.getElementById('exp-soluong').value = '1';
-        calcExpenseTotal();
+        let tbody = document.getElementById('modal-expense-tbody');
+        tbody.innerHTML = '';
+        
+        let data = expenseData[day][cat];
+        if (data.length === 0) {
+            addModalRow(); // Thêm 1 dòng trống mặc định
+        } else {
+            data.forEach(item => addModalRow(item));
+        }
         
         document.getElementById('modal-expense').style.display = 'block';
     }
@@ -746,72 +788,134 @@
         document.getElementById('modal-expense').style.display = 'none';
     }
 
-    function calcExpenseTotal() {
-        let gia = parseFloat(document.getElementById('exp-giatien').value.replace(/,/g, '')) || 0;
-        let sl = parseFloat(document.getElementById('exp-soluong').value) || 0;
-        let total = gia * sl;
-        document.getElementById('exp-thanhtien').innerText = formatVND(total);
-        return total;
-    }
-
-    document.getElementById('exp-giatien').addEventListener('input', function() {
-        dinhDangDauPhay(this);
-        calcExpenseTotal();
-    });
-    document.getElementById('exp-soluong').addEventListener('input', calcExpenseTotal);
-
-    document.getElementById('btn-save-expense').addEventListener('click', function() {
-        let nd = document.getElementById('exp-noidung').value.trim();
-        let dt = document.getElementById('exp-doituong').value.trim();
-        let gia = parseFloat(document.getElementById('exp-giatien').value.replace(/,/g, '')) || 0;
-        let sl = parseFloat(document.getElementById('exp-soluong').value) || 0;
-        let total = gia * sl;
-        
-        let combinedName = nd;
-        if(dt !== '') {
-            combinedName = combinedName ? combinedName + " | " + dt : dt;
-        }
-        if (combinedName === '') combinedName = '...';
-        
-        // Thêm vào bảng (Nội dung chi| Đối tượng chi | Giá tiền | Số lượng | Thành tiền)
-        let tbody = document.getElementById(`group-${activeDay}-${activeCategory}`);
+    function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0 }) {
+        let tbody = document.getElementById('modal-expense-tbody');
         let tr = document.createElement('tr');
-        tr.setAttribute('data-value', total);
+        
         tr.innerHTML = `
-            <td style="width: 5%; color:#888;">-</td>
-            <td style="width: 40%;">${combinedName}</td>
-            <td style="width: 15%;">${formatVND(gia)}</td>
-            <td style="width: 10%;">${sl}</td>
-            <td style="width: 15%;">${formatVND(total)}</td>
-            <td style="width: 5%;"><input type="checkbox"></td>
+            <td class="stt-cell"></td>
+            <td><input type="text" class="inp-nd" value="${item.nd}" placeholder="Nội dung"></td>
+            <td><input type="text" class="inp-dt" value="${item.dt}" placeholder="Đối tượng"></td>
+            <td><input type="text" class="inp-gia" value="${item.gia}" placeholder="Trống hoặc điền"></td>
+            <td><input type="number" class="inp-sl" value="${item.sl}" min="1"></td>
+            <td class="cell-thanh-tien" style="font-weight:bold;">${formatVND(item.total)}</td>
+            <td><button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button></td>
         `;
         tbody.appendChild(tr);
         
-        updateDayTotals(activeDay);
+        // Gắn sự kiện tính toán tự động
+        let inpGia = tr.querySelector('.inp-gia');
+        let inpSl = tr.querySelector('.inp-sl');
+        
+        inpGia.addEventListener('input', function() {
+            dinhDangDauPhay(this);
+            calcRowTotal(tr);
+        });
+        inpSl.addEventListener('input', function() {
+            calcRowTotal(tr);
+        });
+
+        tr.setAttribute('data-total', item.total);
+        updateModalSTT();
+    }
+
+    function removeModalRow(btn) {
+        let tr = btn.closest('tr');
+        tr.remove();
+        updateModalSTT();
+    }
+
+    function updateModalSTT() {
+        let rows = document.querySelectorAll('#modal-expense-tbody tr');
+        rows.forEach((row, index) => {
+            row.querySelector('.stt-cell').innerText = index + 1;
+        });
+    }
+
+    function calcRowTotal(tr) {
+        let giaStr = tr.querySelector('.inp-gia').value.replace(/,/g, '');
+        let gia = parseFloat(giaStr) || 0; 
+        let sl = parseFloat(tr.querySelector('.inp-sl').value) || 0;
+        let total = gia * sl;
+        
+        tr.querySelector('.cell-thanh-tien').innerText = formatVND(total);
+        tr.setAttribute('data-total', total);
+    }
+
+    // --- LƯU & RENDER LẠI BẢNG ---
+    document.getElementById('btn-save-expense').addEventListener('click', function() {
+        let rows = document.querySelectorAll('#modal-expense-tbody tr');
+        let newData = [];
+        
+        rows.forEach(row => {
+            let nd = row.querySelector('.inp-nd').value.trim();
+            let dt = row.querySelector('.inp-dt').value.trim();
+            let gia = row.querySelector('.inp-gia').value.trim();
+            let sl = row.querySelector('.inp-sl').value;
+            let total = parseFloat(row.getAttribute('data-total')) || 0;
+            
+            // Chỉ lưu những dòng có nhập dữ liệu (nội dung, đối tượng hoặc giá)
+            if (nd || dt || gia) {
+                newData.push({ nd, dt, gia, sl, total });
+            }
+        });
+        
+        // Cập nhật Database
+        expenseData[currentDay][currentCat] = newData;
+        
+        // Render Bảng chính
+        renderMainCategory(currentDay, currentCat);
+        updateDayTotals(currentDay);
+        
         closeExpenseModal();
     });
 
-    function updateDayTotals(day) {
-        const categories = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
-        let dayTotal = 0;
+    function renderMainCategory(day, cat) {
+        let tbody = document.getElementById(`group-${day}-${cat}`);
+        let headerRow = tbody.querySelector('.category-row'); // Giữ lại tiêu đề có nút (+)
         
-        categories.forEach(cat => {
-            let tbody = document.getElementById(`group-${day}-${cat}`);
-            let rows = tbody.querySelectorAll('tr[data-value]');
-            let catTotal = 0;
-            rows.forEach(r => {
-                catTotal += parseFloat(r.getAttribute('data-value')) || 0;
-            });
+        tbody.innerHTML = '';
+        tbody.appendChild(headerRow);
+        
+        let data = expenseData[day][cat];
+        let catTotal = 0;
+        
+        data.forEach((item, index) => {
+            catTotal += item.total;
             
-            // Cập nhật Trường dữ liệu: Tổng số tiền (ở Tiêu đề Diễn giải)
-            document.getElementById(`total-${day}-${cat}`).innerText = formatVND(catTotal);
-            // Cập nhật Bảng Kế Hoạch phía trên
-            document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(catTotal);
+            // Format Gộp Tên: "Nội dung | Đối tượng"
+            let combinedName = item.nd;
+            if (item.dt !== '') {
+                combinedName = combinedName ? combinedName + " | " + item.dt : item.dt;
+            }
+            if (!combinedName) combinedName = '...';
             
-            dayTotal += catTotal;
+            let giaDisp = item.gia ? item.gia + ' đ' : '0 đ';
+            
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="width: 5%; color:#555; text-align: center;">${index + 1}</td>
+                <td style="width: 45%; text-align: left;">${combinedName}</td>
+                <td style="width: 20%; text-align: right;">${giaDisp}</td>
+                <td style="width: 10%; text-align: center;">${item.sl}</td>
+                <td style="width: 20%; text-align: right;">${formatVND(item.total)}</td>
+            `;
+            tbody.appendChild(tr);
         });
         
-        // Cập nhật Tổng chi dự kiến của ngày
+        // Cập nhật dòng Tiêu đề của hạng mục
+        document.getElementById(`total-${day}-${cat}`).innerText = formatVND(catTotal);
+        // Cập nhật trên bảng tổng quát Kế hoạch
+        document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(catTotal);
+    }
+
+    function updateDayTotals(day) {
+        let dayTotal = 0;
+        catsArr.forEach(cat => {
+            let data = expenseData[day][cat];
+            let catTotal = data.reduce((sum, item) => sum + item.total, 0);
+            dayTotal += catTotal;
+        });
         document.getElementById(`tong-chi-${day}`).innerText = formatVND(dayTotal);
     }
 
