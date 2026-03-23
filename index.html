@@ -185,7 +185,7 @@
             pointer-events: none; 
         }
 
-        /* Tables cho các ngày */
+        /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -303,7 +303,6 @@
         }
         .btn-save:hover { background-color: #1a252f; }
         
-        /* Bảng bên trong Modal */
         .modal-table {
             width: 100%;
             border-collapse: collapse;
@@ -371,6 +370,21 @@
             font-family: inherit;
         }
         .btn-select:hover { background-color: #2ecc71; }
+
+        /* Style cho phần tổng kết quỹ */
+        .fund-summary-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .fund-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -458,6 +472,18 @@
             <tbody id="fund-table-body">
             </tbody>
         </table>
+        
+        <div class="fund-summary-box">
+            <div class="fund-summary-item">
+                <span>Tổng tiền nộp quỹ tuần này:</span>
+                <span id="display-tong-tien-quy" style="color: #d32f2f;">0 đ</span>
+            </div>
+            <div class="fund-summary-item">
+                <span>Tỷ lệ so với hạn mức (1.000.000 đ):</span>
+                <span id="display-phan-tram-quy">0%</span>
+            </div>
+        </div>
+
         <p style="font-style: italic; color: #666; font-size: 14px; text-align: center; margin-top: 15px;">* Lưu ý: Mỗi 1 hệ số tương ứng 100.000đ. Khi nhập Hệ số và chọn Thứ, dữ liệu sẽ tự động cập nhật vào mục "Khác".</p>
     </div>
 </div>
@@ -466,7 +492,6 @@
     <div class="modal-content">
         <span class="close" onclick="closeExpenseModal()">&times;</span>
         <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Điều chỉnh chi phí</h2>
-        
         <table class="modal-table">
             <thead>
                 <tr>
@@ -482,7 +507,6 @@
             <tbody id="modal-expense-tbody">
             </tbody>
         </table>
-        
         <button type="button" class="btn-add-row" onclick="addModalRow()">+ Thêm dòng</button>
         <button type="button" class="btn-sample" onclick="openSampleModal()">Thêm chi tiêu mẫu</button>
         <button id="btn-save-expense" class="btn-save">Hoàn thành</button>
@@ -493,7 +517,6 @@
     <div class="modal-content">
         <span class="close" onclick="closeSampleModal()">&times;</span>
         <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Chi Tiêu Mẫu</h2>
-        
         <table class="modal-table">
             <thead>
                 <tr>
@@ -507,7 +530,6 @@
             <tbody id="modal-sample-tbody">
             </tbody>
         </table>
-        
         <button type="button" class="btn-add-row" onclick="addSampleRow()">+ Thêm mẫu</button>
         <button type="button" class="btn-save" onclick="saveAndCloseSampleModal()">Lưu & Đóng</button>
     </div>
@@ -530,7 +552,6 @@
     let sampleExpenses = []; 
     let currentDay = '';
     let currentCat = '';
-    let fundData = [];
 
     function renderWeekUI() {
         let container = document.getElementById('tuan-container');
@@ -540,9 +561,7 @@
         
         daysArr.forEach((day, index) => {
             let dayName = daysName[index];
-            
             submenu.innerHTML += `<a onclick="showDay('${day}')">${dayName}</a>`;
-            
             let html = `
             <div class="day-section" id="section-${day}">
                 <div class="day-header">
@@ -569,7 +588,6 @@
                 <div class="bold-text" style="margin-bottom: 5px;">* Diễn giải cụ thể:</div>
                 <table class="details-table">
             `;
-            
             catsArr.forEach((cat, idx) => {
                 let catName = catsName[idx];
                 html += `
@@ -583,254 +601,153 @@
                     </tbody>
                 `;
             });
-
-            html += `
-                </table>
-            </div>`;
-            
+            html += `</table></div>`;
             container.innerHTML += html;
         });
     }
 
-    function toggleMenu() {
-        document.getElementById("myDropdown").classList.toggle("show");
-    }
-
+    function toggleMenu() { document.getElementById("myDropdown").classList.toggle("show"); }
     window.onclick = function(event) {
         if (!event.target.matches('.menu-btn')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
             for (var i = 0; i < dropdowns.length; i++) {
-                if (dropdowns[i].classList.contains('show')) {
-                    dropdowns[i].classList.remove('show');
-                }
+                if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
             }
         }
     }
 
     function switchModule(moduleId) {
         var modules = document.getElementsByClassName("module");
-        for (var i = 0; i < modules.length; i++) {
-            modules[i].classList.remove("active");
-        }
+        for (var i = 0; i < modules.length; i++) modules[i].classList.remove("active");
         document.getElementById(moduleId).classList.add("active");
         window.scrollTo(0, 0); 
-
         if (moduleId === 'module-chi-tieu-tuan') {
-            let sections = document.querySelectorAll('.day-section');
-            sections.forEach(sec => sec.style.display = 'block');
+            document.querySelectorAll('.day-section').forEach(sec => sec.style.display = 'block');
         }
     }
 
     function showDay(dayId) {
         switchModule('module-chi-tieu-tuan');
-        let sections = document.querySelectorAll('.day-section');
-        sections.forEach(sec => {
-            if (sec.id === 'section-' + dayId) {
-                sec.style.display = 'block';
-            } else {
-                sec.style.display = 'none';
-            }
+        document.querySelectorAll('.day-section').forEach(sec => {
+            sec.style.display = (sec.id === 'section-' + dayId) ? 'block' : 'none';
         });
     }
 
-    function formatVND(soTien) {
-        return soTien.toLocaleString('vi-VN') + ' đ';
-    }
-
+    function formatVND(soTien) { return soTien.toLocaleString('vi-VN') + ' đ'; }
     function dinhDangDauPhay(input) {
-        let giaTri = input.value.replace(/\D/g, ''); 
-        if (giaTri !== '') {
-            giaTri = parseInt(giaTri, 10).toLocaleString('en-US'); 
-        } else {
-            giaTri = '';
-        }
-        input.value = giaTri;
+        let val = input.value.replace(/\D/g, ''); 
+        input.value = val !== '' ? parseInt(val, 10).toLocaleString('en-US') : '';
     }
-
-    // Hàm mới: Format giá trị nhập vào thành float tối đa 2 số thập phân
     function formatFloatInput(input) {
         let val = input.value.replace(/[^0-9.]/g, ''); 
         let parts = val.split('.');
-        if (parts.length > 2) {
-            val = parts[0] + '.' + parts.slice(1).join('');
-        }
-        if (parts.length === 2 && parts[1].length > 2) {
-            val = parts[0] + '.' + parts[1].substring(0, 2);
-        }
+        if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+        if (parts.length === 2 && parts[1].length > 2) val = parts[0] + '.' + parts[1].substring(0, 2);
         input.value = val;
     }
 
     const inputTienMat = document.getElementById("input-tien-mat");
     const inputNganHang = document.getElementById("input-ngan-hang");
-    const hienThiTongBanGiao = document.getElementById("hien-thi-tong-ban-giao");
-
     function tinhTongBanGiao() {
-        const tienMat = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
-        const nganHang = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
-        hienThiTongBanGiao.textContent = formatVND(tienMat + nganHang);
+        const tm = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
+        const nh = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
+        document.getElementById("hien-thi-tong-ban-giao").textContent = formatVND(tm + nh);
     }
     inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
     inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
 
     const inputTuNgay = document.getElementById("input-tu-ngay");
-    const spanDisplayTuNgay = document.getElementById("display-tu-ngay");
-    const inputDenNgay = document.getElementById("input-den-ngay");
     const inputTuan = document.getElementById("input-tuan");
-    const inputThangNam = document.getElementById("input-thang-nam");
 
     function getGMT7Date() {
         const d = new Date();
-        const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        return new Date(utc + (3600000 * 7));
+        return new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (3600000 * 7));
     }
-
     function getMonday(d) {
         let dateObj = new Date(d);
         const day = dateObj.getDay();
         const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(dateObj.setDate(diff));
     }
-
     function formatToInputDate(date) {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     }
-
     function formatDisplayDate(date) {
-        const d = String(date.getDate()).padStart(2, '0');
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const y = date.getFullYear();
-        return `${d}/${m}/${y}`;
+        return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
     }
-
     function getISOWeekNumber(date) {
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
     }
 
     function initTimeModule() {
-        const today = getGMT7Date();
-        const currentMonday = getMonday(today);
+        const currentMonday = getMonday(getGMT7Date());
         let nextMonday = new Date(currentMonday);
         nextMonday.setDate(currentMonday.getDate() + 7);
-        let nextSunday = new Date(nextMonday);
-        nextSunday.setDate(nextMonday.getDate() + 6);
-
-        inputTuNgay.min = formatToInputDate(currentMonday); 
-        inputTuNgay.max = formatToInputDate(nextSunday);
-
         inputTuNgay.value = formatToInputDate(nextMonday);
         updateTimeData(nextMonday);
     }
 
     inputTuNgay.addEventListener('change', function() {
         if (!this.value) return;
-        let selectedDate = new Date(this.value);
-        let monday = getMonday(selectedDate);
+        let monday = getMonday(new Date(this.value));
         this.value = formatToInputDate(monday);
+        resetWeeklyFundData(); // Làm mới bảng quỹ khi đổi tuần
         updateTimeData(monday);
     });
 
     function updateTimeData(monday) {
-        spanDisplayTuNgay.textContent = formatDisplayDate(monday);
+        document.getElementById("display-tu-ngay").textContent = formatDisplayDate(monday);
         let sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        inputDenNgay.value = formatDisplayDate(sunday);
+        document.getElementById("input-den-ngay").value = formatDisplayDate(sunday);
         inputTuan.value = getISOWeekNumber(monday);
-
-        const mMon = monday.getMonth() + 1, yMon = monday.getFullYear();
-        const mSun = sunday.getMonth() + 1, ySun = sunday.getFullYear();
-        if (yMon === ySun) {
-            inputThangNam.value = (mMon === mSun) ? `Tháng ${mMon} / Năm ${yMon}` : `Tháng ${mMon} | ${mSun} / Năm ${yMon}`;
-        } else {
-            inputThangNam.value = `Tháng ${mMon} / Năm ${yMon} - Tháng ${mSun} / Năm ${ySun}`;
-        }
-
+        const mMon = monday.getMonth() + 1, yMon = monday.getFullYear(), mSun = sunday.getMonth() + 1, ySun = sunday.getFullYear();
+        document.getElementById("input-thang-nam").value = (yMon === ySun) ? ((mMon === mSun) ? `Tháng ${mMon} / Năm ${yMon}` : `Tháng ${mMon} | ${mSun} / Năm ${yMon}`) : `Tháng ${mMon}/${yMon} - Tháng ${mSun}/${ySun}`;
         for (let i = 0; i < daysArr.length; i++) {
             let nextDay = new Date(monday);
-            nextDay.setDate(monday.getDate() + i + 0); 
+            nextDay.setDate(monday.getDate() + i);
             let el = document.getElementById(`ngay-${daysArr[i]}`);
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
     }
 
     function openExpenseModal(day, cat, titleName) {
-        currentDay = day;
-        currentCat = cat;
+        currentDay = day; currentCat = cat;
         document.getElementById('expense-modal-title').innerText = 'Điều chỉnh chi phí: ' + titleName;
-        
         let tbody = document.getElementById('modal-expense-tbody');
         tbody.innerHTML = '';
-        
         let data = expenseData[day][cat];
-        if (data.length === 0) {
-            addModalRow(); 
-        } else {
-            data.forEach(item => addModalRow(item));
-        }
-        
+        if (data.length === 0) addModalRow(); else data.forEach(item => addModalRow(item));
         document.getElementById('modal-expense').style.display = 'block';
     }
-
-    function closeExpenseModal() {
-        document.getElementById('modal-expense').style.display = 'none';
-    }
+    function closeExpenseModal() { document.getElementById('modal-expense').style.display = 'none'; }
 
     function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0 }) {
         let tbody = document.getElementById('modal-expense-tbody');
         let tr = document.createElement('tr');
-        
         tr.innerHTML = `
             <td class="stt-cell"></td>
             <td><input type="text" class="inp-nd" value="${item.nd}" placeholder="Nội dung"></td>
             <td><input type="text" class="inp-dt" value="${item.dt}" placeholder="Đối tượng"></td>
-            <td><input type="text" class="inp-gia" value="${item.gia}" placeholder="Bắt buộc điền"></td>
+            <td><input type="text" class="inp-gia" value="${item.gia}" placeholder="Bắt buộc"></td>
             <td><input type="number" class="inp-sl" value="${item.sl}" min="1"></td>
             <td class="cell-thanh-tien" style="font-weight:bold;">${formatVND(item.total)}</td>
             <td><button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button></td>
         `;
         tbody.appendChild(tr);
-        
-        let inpGia = tr.querySelector('.inp-gia');
-        let inpSl = tr.querySelector('.inp-sl');
-        
-        inpGia.addEventListener('input', function() {
-            dinhDangDauPhay(this);
-            calcRowTotal(tr);
-        });
-        inpSl.addEventListener('input', function() {
-            calcRowTotal(tr);
-        });
-
+        tr.querySelector('.inp-gia').addEventListener('input', function() { dinhDangDauPhay(this); calcRowTotal(tr); });
+        tr.querySelector('.inp-sl').addEventListener('input', function() { calcRowTotal(tr); });
         tr.setAttribute('data-total', item.total);
         updateModalSTT();
     }
-
-    function removeModalRow(btn) {
-        let tr = btn.closest('tr');
-        tr.remove();
-        updateModalSTT();
-    }
-
-    function updateModalSTT() {
-        let rows = document.querySelectorAll('#modal-expense-tbody tr');
-        rows.forEach((row, index) => {
-            row.querySelector('.stt-cell').innerText = index + 1;
-        });
-    }
-
+    function removeModalRow(btn) { btn.closest('tr').remove(); updateModalSTT(); }
+    function updateModalSTT() { document.querySelectorAll('#modal-expense-tbody tr').forEach((row, i) => row.querySelector('.stt-cell').innerText = i + 1); }
     function calcRowTotal(tr) {
-        let giaStr = tr.querySelector('.inp-gia').value.replace(/,/g, '');
-        let gia = parseFloat(giaStr) || 0; 
-        let slStr = tr.querySelector('.inp-sl').value;
-        let sl = parseFloat(slStr) || 0;
+        let gia = parseFloat(tr.querySelector('.inp-gia').value.replace(/,/g, '')) || 0;
+        let sl = parseFloat(tr.querySelector('.inp-sl').value) || 0;
         let total = gia * sl;
-        
         tr.querySelector('.cell-thanh-tien').innerText = formatVND(total);
         tr.setAttribute('data-total', total);
     }
@@ -838,186 +755,89 @@
     function openSampleModal() {
         let tbody = document.getElementById('modal-sample-tbody');
         tbody.innerHTML = '';
-        if(sampleExpenses.length === 0) {
-            addSampleRow();
-        } else {
-            sampleExpenses.forEach(item => addSampleRow(item));
-        }
+        if(sampleExpenses.length === 0) addSampleRow(); else sampleExpenses.forEach(item => addSampleRow(item));
         document.getElementById('modal-sample').style.display = 'block';
     }
-
-    function closeSampleModal() {
-        document.getElementById('modal-sample').style.display = 'none';
-    }
-
+    function closeSampleModal() { document.getElementById('modal-sample').style.display = 'none'; }
     function addSampleRow(item = {nd:'', dt:'', gia:''}) {
         let tbody = document.getElementById('modal-sample-tbody');
         let tr = document.createElement('tr');
-        
-        tr.innerHTML = `
-            <td class="stt-cell-sample"></td>
-            <td><input type="text" class="inp-samp-nd" value="${item.nd}" placeholder="Nội dung"></td>
-            <td><input type="text" class="inp-samp-dt" value="${item.dt}" placeholder="Đối tượng"></td>
-            <td><input type="text" class="inp-samp-gia" value="${item.gia}" placeholder="Trống hoặc điền"></td>
-            <td>
-                <button type="button" class="btn-select" onclick="selectSample(this)">Chọn</button>
-                <button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">X</button>
-            </td>
-        `;
+        tr.innerHTML = `<td class="stt-cell-sample"></td><td><input type="text" class="inp-samp-nd" value="${item.nd}"></td><td><input type="text" class="inp-samp-dt" value="${item.dt}"></td><td><input type="text" class="inp-samp-gia" value="${item.gia}"></td><td><button type="button" class="btn-select" onclick="selectSample(this)">Chọn</button><button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">X</button></td>`;
         tbody.appendChild(tr);
-
-        tr.querySelector('.inp-samp-gia').addEventListener('input', function() {
-            dinhDangDauPhay(this);
-        });
-
+        tr.querySelector('.inp-samp-gia').addEventListener('input', function() { dinhDangDauPhay(this); });
         updateSampleSTT();
     }
-
-    function removeSampleRow(btn) {
-        btn.closest('tr').remove();
-        updateSampleSTT();
-    }
-
-    function updateSampleSTT() {
-        let rows = document.querySelectorAll('#modal-sample-tbody tr');
-        rows.forEach((row, index) => {
-            row.querySelector('.stt-cell-sample').innerText = index + 1;
-        });
-    }
-
+    function removeSampleRow(btn) { btn.closest('tr').remove(); updateSampleSTT(); }
+    function updateSampleSTT() { document.querySelectorAll('#modal-sample-tbody tr').forEach((row, i) => row.querySelector('.stt-cell-sample').innerText = i + 1); }
     function saveAndCloseSampleModal() {
-        let rows = document.querySelectorAll('#modal-sample-tbody tr');
-        let newData = [];
-        rows.forEach(row => {
-            let nd = row.querySelector('.inp-samp-nd').value.trim();
-            let dt = row.querySelector('.inp-samp-dt').value.trim();
-            let gia = row.querySelector('.inp-samp-gia').value.trim();
-            
-            if (nd || dt || gia) {
-                newData.push({ nd, dt, gia });
-            }
-        });
-        sampleExpenses = newData;
+        sampleExpenses = Array.from(document.querySelectorAll('#modal-sample-tbody tr')).map(row => ({
+            nd: row.querySelector('.inp-samp-nd').value.trim(),
+            dt: row.querySelector('.inp-samp-dt').value.trim(),
+            gia: row.querySelector('.inp-samp-gia').value.trim()
+        })).filter(i => i.nd || i.dt || i.gia);
         closeSampleModal();
     }
-
     function selectSample(btn) {
         let tr = btn.closest('tr');
-        let nd = tr.querySelector('.inp-samp-nd').value.trim();
-        let dt = tr.querySelector('.inp-samp-dt').value.trim();
-        let giaStr = tr.querySelector('.inp-samp-gia').value.trim();
-        let giaNum = parseFloat(giaStr.replace(/,/g, '')) || 0;
-        
-        addModalRow({ nd: nd, dt: dt, gia: giaStr, sl: 1, total: giaNum });
+        let nd = tr.querySelector('.inp-samp-nd').value.trim(), dt = tr.querySelector('.inp-samp-dt').value.trim(), giaStr = tr.querySelector('.inp-samp-gia').value.trim();
+        addModalRow({ nd, dt, gia: giaStr, sl: 1, total: parseFloat(giaStr.replace(/,/g, '')) || 0 });
     }
 
     document.getElementById('btn-save-expense').addEventListener('click', function() {
-        let rows = document.querySelectorAll('#modal-expense-tbody tr');
-        let newData = [];
-        let hasError = false;
-        
-        rows.forEach(row => {
-            let nd = row.querySelector('.inp-nd').value.trim();
-            let dt = row.querySelector('.inp-dt').value.trim();
-            let giaStr = row.querySelector('.inp-gia').value.trim();
-            let gia = parseFloat(giaStr.replace(/,/g, '')) || 0;
-            let sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
-            let total = gia * sl;
-            
-            row.querySelector('.inp-gia').style.borderColor = '#ddd';
-            row.querySelector('.inp-sl').style.borderColor = '#ddd';
-
-            if (nd !== '') {
-                if (gia <= 0) {
-                    row.querySelector('.inp-gia').style.borderColor = 'red';
-                    hasError = true;
-                }
-                if (sl <= 0) {
-                    row.querySelector('.inp-sl').style.borderColor = 'red';
-                    hasError = true;
-                }
-                if (gia > 0 && sl > 0) {
-                    newData.push({ nd, dt, gia: giaStr, sl, total });
-                }
-            } else {
-                if (dt !== '' || giaStr !== '') {
-                    if (gia > 0 && sl > 0) {
-                        newData.push({ nd, dt, gia: giaStr, sl, total });
-                    }
-                }
+        let newData = [], hasError = false;
+        document.querySelectorAll('#modal-expense-tbody tr').forEach(row => {
+            let nd = row.querySelector('.inp-nd').value.trim(), giaStr = row.querySelector('.inp-gia').value.trim(), gia = parseFloat(giaStr.replace(/,/g, '')) || 0, sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
+            if (nd !== '' && (gia <= 0 || sl <= 0)) hasError = true;
+            if (nd !== '' || row.querySelector('.inp-dt').value.trim() !== '' || giaStr !== '') {
+                if (gia > 0 && sl > 0) newData.push({ nd, dt: row.querySelector('.inp-dt').value.trim(), gia: giaStr, sl, total: gia * sl });
             }
         });
-        
-        if (hasError) {
-            alert("Giá tiền và số lượng bắt buộc phải lớn hơn 0 khi có Nội dung chi!");
-            return;
-        }
-        
+        if (hasError) { alert("Giá và SL phải > 0!"); return; }
         expenseData[currentDay][currentCat] = newData;
-        
         renderMainCategory(currentDay, currentCat);
         updateDayTotals(currentDay);
-        
         closeExpenseModal();
     });
 
     function renderMainCategory(day, cat) {
-        let tbody = document.getElementById(`group-${day}-${cat}`);
-        let headerRow = tbody.querySelector('.category-row'); 
-        
-        tbody.innerHTML = '';
-        tbody.appendChild(headerRow);
-        
-        let data = expenseData[day][cat];
-        let catTotal = 0;
-        
-        data.forEach((item, index) => {
-            catTotal += item.total;
-            
-            let combinedName = item.nd;
-            if (item.dt !== '') {
-                combinedName = combinedName ? combinedName + " | " + item.dt : item.dt;
-            }
-            if (!combinedName) combinedName = '...';
-            
-            let giaDisp = item.gia ? item.gia + ' đ' : '0 đ';
-            
+        let tbody = document.getElementById(`group-${day}-${cat}`), header = tbody.querySelector('.category-row');
+        tbody.innerHTML = ''; tbody.appendChild(header);
+        let total = 0;
+        expenseData[day][cat].forEach((item, i) => {
+            total += item.total;
             let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="width: 5%; color:#555; text-align: center;">${index + 1}</td>
-                <td style="width: 45%; text-align: left;">${combinedName}</td>
-                <td style="width: 20%; text-align: right;">${giaDisp}</td>
-                <td style="width: 10%; text-align: center;">${item.sl}</td>
-                <td style="width: 20%; text-align: right;">${formatVND(item.total)}</td>
-            `;
+            tr.innerHTML = `<td style="width: 5%;">${i + 1}</td><td style="width: 45%;">${(item.nd + (item.dt ? " | " + item.dt : "")) || '...'}</td><td style="width: 20%;">${item.gia} đ</td><td style="width: 10%;">${item.sl}</td><td style="width: 20%;">${formatVND(item.total)}</td>`;
             tbody.appendChild(tr);
         });
-        
-        document.getElementById(`total-${day}-${cat}`).innerText = formatVND(catTotal);
-        document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(catTotal);
+        document.getElementById(`total-${day}-${cat}`).innerText = formatVND(total);
+        document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(total);
+    }
+    function updateDayTotals(day) {
+        let total = catsArr.reduce((sum, cat) => sum + expenseData[day][cat].reduce((s, i) => s + i.total, 0), 0);
+        document.getElementById(`tong-chi-${day}`).innerText = formatVND(total);
     }
 
-    function updateDayTotals(day) {
-        let dayTotal = 0;
-        catsArr.forEach(cat => {
-            let data = expenseData[day][cat];
-            let catTotal = data.reduce((sum, item) => sum + item.total, 0);
-            dayTotal += catTotal;
+    // Module Bảng Hệ Số Quỹ
+    function resetWeeklyFundData() {
+        // Xóa bảng
+        document.getElementById('fund-table-body').innerHTML = '';
+        // Xóa các khoản chi "isFund" trong expenseData
+        daysArr.forEach(d => {
+            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => !item.isFund);
+            renderMainCategory(d, 'khac');
+            updateDayTotals(d);
         });
-        document.getElementById(`tong-chi-${day}`).innerText = formatVND(dayTotal);
+        updateFundSummary();
     }
 
     function addFundRow() {
         const tbody = document.getElementById('fund-table-body');
         const tuNgayVal = document.getElementById('input-tu-ngay').value;
         const currentYear = tuNgayVal ? new Date(tuNgayVal).getFullYear() : new Date().getFullYear();
-        const currentWeek = document.getElementById('input-tuan').value || 0;
-
+        const currentWeek = inputTuan.value || 0;
         const tr = document.createElement('tr');
-        // Tạo ID duy nhất cho mỗi hàng dựa trên thời gian
         const fundUniqueId = 'fund_' + Date.now();
         tr.setAttribute('data-fund-id', fundUniqueId);
-
         tr.innerHTML = `
             <td class="fund-stt"></td>
             <td><input type="text" value="${currentYear}" readonly style="text-align:center; border:none; background:transparent;"></td>
@@ -1025,12 +845,7 @@
             <td><input type="text" class="fund-name" placeholder="Tên quỹ..." oninput="syncFundToExpense(this)"></td>
             <td><input type="text" class="fund-target" placeholder="Đối tượng..." oninput="syncFundToExpense(this)"></td>
             <td><input type="text" class="fund-factor" placeholder="0.00" oninput="formatFloatInput(this); syncFundToExpense(this)"></td>
-            <td>
-                <select class="fund-day" onchange="syncFundToExpense(this)">
-                    <option value="">-- Chọn thứ --</option>
-                    ${daysArr.map((d, i) => `<option value="${d}">${daysName[i]}</option>`).join('')}
-                </select>
-            </td>
+            <td><select class="fund-day" onchange="syncFundToExpense(this)"><option value="">-- Chọn --</option>${daysArr.map((d, i) => `<option value="${d}">${daysName[i]}</option>`).join('')}</select></td>
             <td><button type="button" class="btn-remove-row" onclick="removeFundRow(this)">X</button></td>
         `;
         tbody.appendChild(tr);
@@ -1038,67 +853,42 @@
     }
 
     function removeFundRow(btn) {
-        const tr = btn.closest('tr');
-        const fundUniqueId = tr.getAttribute('data-fund-id');
-        
-        // Xóa các chi phí liên quan trong expenseData
+        const tr = btn.closest('tr'), id = tr.getAttribute('data-fund-id');
         daysArr.forEach(d => {
-            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== fundUniqueId);
-            renderMainCategory(d, 'khac');
-            updateDayTotals(d);
+            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== id);
+            renderMainCategory(d, 'khac'); updateDayTotals(d);
         });
-        
-        tr.remove();
-        updateFundSTT();
+        tr.remove(); updateFundSTT(); updateFundSummary();
     }
 
-    function updateFundSTT() {
-        let rows = document.querySelectorAll('#fund-table-body tr');
-        rows.forEach((row, index) => {
-            row.querySelector('.fund-stt').innerText = index + 1;
-        });
-    }
+    function updateFundSTT() { document.querySelectorAll('#fund-table-body tr').forEach((row, i) => row.querySelector('.fund-stt').innerText = i + 1); }
 
     function syncFundToExpense(element) {
-        const tr = element.closest('tr');
-        const fundUniqueId = tr.getAttribute('data-fund-id');
-        const fundName = tr.querySelector('.fund-name').value.trim();
-        const fundTarget = tr.querySelector('.fund-target').value.trim();
-        const factorStr = tr.querySelector('.fund-factor').value;
-        const factor = parseFloat(factorStr) || 0;
-        const selectedDay = tr.querySelector('.fund-day').value;
-
-        // Xóa dữ liệu cũ của hàng này trong tất cả các ngày
+        const tr = element.closest('tr'), id = tr.getAttribute('data-fund-id'), name = tr.querySelector('.fund-name').value.trim(), target = tr.querySelector('.fund-target').value.trim(), factor = parseFloat(tr.querySelector('.fund-factor').value) || 0, day = tr.querySelector('.fund-day').value;
         daysArr.forEach(d => {
-            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== fundUniqueId);
-            renderMainCategory(d, 'khac');
-            updateDayTotals(d);
+            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== id);
+            renderMainCategory(d, 'khac'); updateDayTotals(d);
         });
-
-        if (!selectedDay || !fundName || factor <= 0) return;
-
-        // Tính giá tiền dựa vào hệ số (1 hệ số = 100,000)
-        const moneyValue = factor * 100000;
-        const moneyStr = moneyValue.toLocaleString('en-US');
-
-        expenseData[selectedDay]['khac'].push({
-            nd: "Nộp quỹ: " + fundName,
-            dt: fundTarget || "Hệ số", 
-            gia: moneyStr,
-            sl: 1, 
-            total: moneyValue,
-            isFund: true, 
-            fundUniqueId: fundUniqueId
-        });
-
-        renderMainCategory(selectedDay, 'khac');
-        updateDayTotals(selectedDay);
+        if (day && name && factor > 0) {
+            const money = factor * 100000;
+            expenseData[day]['khac'].push({ nd: "Nộp quỹ: " + name, dt: target || "Hệ số", gia: money.toLocaleString('en-US'), sl: 1, total: money, isFund: true, fundUniqueId: id });
+            renderMainCategory(day, 'khac'); updateDayTotals(day);
+        }
+        updateFundSummary();
     }
 
-    window.onload = function() {
-        renderWeekUI(); 
-        initTimeModule(); 
-    };
+    function updateFundSummary() {
+        let totalMoney = 0;
+        document.querySelectorAll('#fund-table-body tr').forEach(row => {
+            let f = parseFloat(row.querySelector('.fund-factor').value) || 0;
+            totalMoney += (f * 100000);
+        });
+        document.getElementById('display-tong-tien-quy').innerText = formatVND(totalMoney);
+        let percent = (totalMoney / 1000000) * 100;
+        document.getElementById('display-phan-tram-quy').innerText = percent.toFixed(1) + '%';
+    }
+
+    window.onload = function() { renderWeekUI(); initTimeModule(); };
 </script>
 
 </body>
