@@ -22,6 +22,9 @@
             display: flex;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 15;
         }
         .menu-btn {
             font-size: 26px;
@@ -61,6 +64,24 @@
             background-color: #e9e9e9;
         }
         .show {
+            display: block;
+        }
+
+        /* Submenu cho Nội dung chi tuần */
+        .dropdown-submenu {
+            position: relative;
+        }
+        .dropdown-submenu .dropdown-content-sub {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: -1px;
+            background-color: #fff;
+            min-width: 150px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border: 1px solid #333;
+        }
+        .dropdown-submenu:hover .dropdown-content-sub {
             display: block;
         }
 
@@ -207,6 +228,7 @@
             margin-bottom: 50px;
             padding-bottom: 20px;
             border-bottom: 3px double #aaa;
+            scroll-margin-top: 80px; /* Bù trừ khoảng cách khi thanh menu được ghim ở trên */
         }
         .day-section:last-child {
             border-bottom: none;
@@ -359,7 +381,11 @@
         <div id="myDropdown" class="dropdown-content">
             <a onclick="switchModule('module-ban-giao')">Bàn giao tuần trước</a>
             <a onclick="switchModule('module-thoi-gian')">Thời gian</a>
-            <a onclick="switchModule('module-chi-tieu-tuan')">Nội dung chi tuần</a>
+            <div class="dropdown-submenu">
+                <a onclick="switchModule('module-chi-tieu-tuan')">Nội dung chi tuần &raquo;</a>
+                <div class="dropdown-content-sub" id="submenu-days">
+                    </div>
+            </div>
         </div>
     </div>
     <h3 style="margin: 0; font-weight: bold; font-family: 'Times New Roman', Times, serif; letter-spacing: 1px;">KẾ HOẠCH CHI TIÊU</h3>
@@ -385,7 +411,7 @@
     <div id="module-thoi-gian" class="module">
         <h2 class="module-title">Thông Tin Thời Gian</h2>
         <div class="form-group">
-            <label>Từ ngày (Thứ 2):</label>
+            <label>Từ ngày (Bắt đầu tuần):</label>
             <div class="date-wrapper">
                 <span class="date-display" id="display-tu-ngay"></span>
                 <input type="date" id="input-tu-ngay">
@@ -407,7 +433,6 @@
 
     <div id="module-chi-tieu-tuan" class="module">
         <h2 class="module-title">Nội Dung Chi Tuần</h2>
-        
         <div id="tuan-container"></div>
     </div>
 </div>
@@ -464,9 +489,9 @@
 </div>
 
 <script>
-    // --- KHỞI TẠO CẤU TRÚC DỮ LIỆU ---
-    const daysArr = ['thu-2', 'thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
-    const daysName = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chúa nhật'];
+    // --- KHỞI TẠO CẤU TRÚC DỮ LIỆU TÙY CHỈNH ---
+    const daysArr = ['thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
+    const daysName = ['Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chúa nhật'];
     const catsArr = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
     const catsName = ['Ăn sáng', 'Ăn trưa', 'Ăn tối', 'Di chuyển', 'Tiết kiệm', 'Khác'];
     
@@ -482,16 +507,22 @@
     let currentDay = '';
     let currentCat = '';
 
-    // Hàm tạo giao diện html cho cả tuần
+    // Hàm tạo giao diện html cho các ngày có sẵn trong hệ thống
     function renderWeekUI() {
         let container = document.getElementById('tuan-container');
+        let submenu = document.getElementById('submenu-days');
         container.innerHTML = '';
+        submenu.innerHTML = '';
         
         daysArr.forEach((day, index) => {
             let dayName = daysName[index];
             
+            // Render sub-menu
+            submenu.innerHTML += `<a onclick="scrollToDay('${day}')">${dayName}</a>`;
+            
+            // Render Section trong Nội Dung Chi Tuần
             let html = `
-            <div class="day-section">
+            <div class="day-section" id="section-${day}">
                 <div class="day-header">
                     <div>${dayName}</div>
                     <div id="ngay-${day}">--/--/----</div>
@@ -539,10 +570,11 @@
         });
     }
 
-    // --- MENU DROPDOWN ---
+    // --- MENU NỔI BẬT & CUỘN TRANG ---
     function toggleMenu() {
         document.getElementById("myDropdown").classList.toggle("show");
     }
+
     window.onclick = function(event) {
         if (!event.target.matches('.menu-btn')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
@@ -554,16 +586,24 @@
         }
     }
 
-    // --- CHUYỂN MODULE ---
     function switchModule(moduleId) {
         var modules = document.getElementsByClassName("module");
         for (var i = 0; i < modules.length; i++) {
             modules[i].classList.remove("active");
         }
         document.getElementById(moduleId).classList.add("active");
+        window.scrollTo(0, 0); // Reset scroll khi đổi tab chính
     }
 
-    // --- UTILS FORMAT ---
+    function scrollToDay(dayId) {
+        switchModule('module-chi-tieu-tuan');
+        setTimeout(() => {
+            const el = document.getElementById('section-' + dayId);
+            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    }
+
+    // --- TIỆN ÍCH ---
     function formatVND(soTien) {
         return soTien.toLocaleString('vi-VN') + ' đ';
     }
@@ -590,7 +630,7 @@
     inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
     inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
 
-    // --- XỬ LÝ NGÀY THÁNG NĂM ---
+    // --- XỬ LÝ THỜI GIAN ---
     const inputTuNgay = document.getElementById("input-tu-ngay");
     const spanDisplayTuNgay = document.getElementById("display-tu-ngay");
     const inputDenNgay = document.getElementById("input-den-ngay");
@@ -666,9 +706,11 @@
             inputThangNam.value = `Tháng ${mMon} / Năm ${yMon} - Tháng ${mSun} / Năm ${ySun}`;
         }
 
-        for (let i = 0; i <= 6; i++) {
+        // Tạo ngày và nạp vào danh sách tương ứng
+        for (let i = 0; i < daysArr.length; i++) {
             let nextDay = new Date(monday);
-            nextDay.setDate(monday.getDate() + i);
+            // i=0 tương ứng daysArr="thu-3" (do Thứ 2 đã bị ẩn theo tùy chỉnh) -> cộng bù +1 ngày
+            nextDay.setDate(monday.getDate() + i + 1); 
             let el = document.getElementById(`ngay-${daysArr[i]}`);
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
@@ -743,7 +785,8 @@
     function calcRowTotal(tr) {
         let giaStr = tr.querySelector('.inp-gia').value.replace(/,/g, '');
         let gia = parseFloat(giaStr) || 0; 
-        let sl = parseFloat(tr.querySelector('.inp-sl').value) || 0;
+        let slStr = tr.querySelector('.inp-sl').value;
+        let sl = parseFloat(slStr) || 0;
         let total = gia * sl;
         
         tr.querySelector('.cell-thanh-tien').innerText = formatVND(total);
@@ -827,7 +870,7 @@
         addModalRow({ nd: nd, dt: dt, gia: giaStr, sl: 1, total: giaNum });
     }
 
-    // --- LƯU BẢNG ĐIỀU CHỈNH & KIỂM TRA GIÁ TRỊ > 0 ---
+    // --- KIỂM TRA BẮT BUỘC: GIÁ & SỐ LƯỢNG KHI CÓ NỘI DUNG ---
     document.getElementById('btn-save-expense').addEventListener('click', function() {
         let rows = document.querySelectorAll('#modal-expense-tbody tr');
         let newData = [];
@@ -838,22 +881,38 @@
             let dt = row.querySelector('.inp-dt').value.trim();
             let giaStr = row.querySelector('.inp-gia').value.trim();
             let gia = parseFloat(giaStr.replace(/,/g, '')) || 0;
-            let sl = parseFloat(row.querySelector('.inp-sl').value) || 1;
+            let sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
             let total = gia * sl;
             
-            if (nd || dt || giaStr) {
+            // Reset trạng thái border
+            row.querySelector('.inp-gia').style.borderColor = '#ddd';
+            row.querySelector('.inp-sl').style.borderColor = '#ddd';
+
+            if (nd !== '') {
+                // Khi có Nhập nội dung chi -> Bắt lỗi Giá tiền và Số lượng phải > 0
                 if (gia <= 0) {
                     row.querySelector('.inp-gia').style.borderColor = 'red';
                     hasError = true;
-                } else {
-                    row.querySelector('.inp-gia').style.borderColor = '#ddd';
+                }
+                if (sl <= 0) {
+                    row.querySelector('.inp-sl').style.borderColor = 'red';
+                    hasError = true;
+                }
+                if (gia > 0 && sl > 0) {
                     newData.push({ nd, dt, gia: giaStr, sl, total });
+                }
+            } else {
+                // Nội dung rỗng nhưng có nhập giá/đối tượng -> vẫn giữ nhưng phải hợp lệ SL, Giá > 0
+                if (dt !== '' || giaStr !== '') {
+                    if (gia > 0 && sl > 0) {
+                        newData.push({ nd, dt, gia: giaStr, sl, total });
+                    }
                 }
             }
         });
         
         if (hasError) {
-            alert("Giá tiền ở bảng điều chỉnh thu chi bắt buộc phải lớn hơn 0!");
+            alert("Giá tiền và số lượng bắt buộc phải lớn hơn 0 khi có Nội dung chi!");
             return;
         }
         
@@ -912,8 +971,8 @@
     }
 
     window.onload = function() {
-        renderWeekUI(); // Gọi hàm sinh giao diện HTML cho các ngày trước
-        initTimeModule(); // Sau đó mới gán ngày giờ vào
+        renderWeekUI(); 
+        initTimeModule(); 
     };
 </script>
 
