@@ -437,7 +437,7 @@
                 background: #fff; 
             }
             .print-container {
-                padding: 0 12mm; /* Căn lề dời vô 1 chút cho đẹp */
+                padding: 0 12mm; /* Căn lề dời vô một chút cho đẹp */
             }
             
             /* Bảng Kế hoạch không kẻ viền cứng, chỉ viền đứt nét trên/dưới */
@@ -447,9 +447,6 @@
             
             .p-table-diengiai { width: 100%; border-collapse: collapse; }
             .p-table-diengiai td { padding: 4px 5px; vertical-align: top; border: none; }
-            
-            .p-fund-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 8px; text-align: center; }
             
             @page { size: A4; margin: 15mm; }
         }
@@ -1821,7 +1818,7 @@
             catsArr.forEach(cat => {
                 let catTotal = expenseData[day][cat].reduce((s, i) => s + i.total, 0);
                 dayTotal += catTotal;
-                kehoachCells += `<td>${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</td>`;
+                kehoachCells += `<td style="text-align:right;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</td>`;
             });
             tongChiTuan += dayTotal;
 
@@ -1870,23 +1867,47 @@
         let totalFactor = 0;
         let totalFundMoney = 0;
 
-        funds.forEach((f, i) => {
-            let factor = parseFloat(f.factor) || 0;
-            totalFactor += factor; 
-            totalFundMoney += factor * 100000;
-            let dayIndex = daysArr.indexOf(f.day);
-            let dayNameStr = dayIndex >= 0 ? daysName[dayIndex] : '';
+        for (let i = 0; i < Math.max(funds.length, 4); i += 2) {
+            let f1 = funds[i];
+            let f2 = funds[i + 1];
+            let rowHtml = `<tr>`;
             
-            fundRows += `<tr>
-                <td>${i + 1}</td>
-                <td>${tuNgayObj.getFullYear()}</td>
-                <td>${tuan}</td>
-                <td style="text-align:left;">${f.name || ''}</td>
-                <td style="text-align:left;">${f.target || ''}</td>
-                <td>${f.factor || '0'}</td>
-                <td>${dayNameStr}</td>
-            </tr>`;
-        });
+            // Left column
+            if (f1) {
+                let factor = parseFloat(f1.factor) || 0;
+                totalFactor += factor; 
+                totalFundMoney += factor * 100000;
+                rowHtml += `
+                    <td style="border: 1px solid #000; text-align: center;">${i + 1}</td>
+                    <td style="border: 1px solid #000; text-align: left;">${f1.name || ''}</td>
+                    <td style="border: 1px solid #000; text-align: center;">${f1.factor || '0'}</td>
+                `;
+            } else {
+                rowHtml += `<td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td>`;
+            }
+
+            // Space
+            rowHtml += `<td style="border: none; width: 2%;"></td>`;
+
+            // Right column
+            if (f2) {
+                let factor = parseFloat(f2.factor) || 0;
+                totalFactor += factor; 
+                totalFundMoney += factor * 100000;
+                rowHtml += `
+                    <td style="border: 1px solid #000; text-align: center;">${i + 2}</td>
+                    <td style="border: 1px solid #000; text-align: left;">${f2.name || ''}</td>
+                    <td style="border: 1px solid #000; text-align: center;">${f2.factor || '0'}</td>
+                `;
+            } else {
+                if (i < 4 || f1) {
+                    rowHtml += `<td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td>`;
+                }
+            }
+            
+            rowHtml += `</tr>`;
+            fundRows += rowHtml;
+        }
         
         let fundNameNote = ".........................";
         if (ns.dest === 'quy') {
@@ -1894,6 +1915,24 @@
             Array.from(qSelect.options).forEach(opt => {
                 if(opt.value === ns.quyId) fundNameNote = opt.text;
             });
+        }
+
+        let budapText = "* Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
+        if (ns.budap === 'không') {
+            budapText = "* Nội các quyết định không sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
+        } else if (ns.budap === 'cho phép') {
+            budapText = "* Nội các quyết định cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
+        }
+
+        let nopNoteText = "* Vui lòng cấu hình phần xử lý tiền dư.";
+        let amountVal = ns.amount === 'custom' ? (ns.customAmount ? ns.customAmount + 'đ' : '...') : (ns.amount || '...');
+        if (ns.submit === 'khong_nop') {
+            nopNoteText = "* Số tiền còn lại cuối mỗi tuần sẽ không nộp mà chuyển sang tuần sau.";
+        } else if (ns.submit === 'nop') {
+            let destText = "...";
+            if (ns.dest === 'stk') destText = "STK " + (ns.stk || "...");
+            else if (ns.dest === 'quy') destText = "Quỹ " + (fundNameNote !== "........................." ? fundNameNote : "...");
+            nopNoteText = `* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ ${amountVal}, số tiền dư ra sẽ Nộp vào ${destText} vào thứ 2 tuần kế tiếp.`;
         }
 
         let printContent = `
@@ -1938,22 +1977,11 @@
                 <p style="margin-bottom: 10px;">* Trên đây là bản kế hoạch chi tiêu cho tuần <strong>${tuan}</strong>, có hiệu lực từ 00h00 ngày <strong>${tuNgayStr}</strong>, hạn sử dụng tới 23h59 ngày <strong>${denNgayStr}</strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>
                 Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
 
-                <p style="margin-bottom: 10px;">* Nội các quyết định 
-                ${ns.budap === 'không' ? '☑' : '☐'} không 
-                ${ns.budap === 'cho phép' ? '☑' : '☐'} cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.</p>
+                <p style="margin-bottom: 10px;">${budapText}</p>
 
                 <p style="margin-bottom: 10px;">* Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán và Phiếu yêu cầu cấp chi phí cho tuần tiếp theo.</p>
 
-                <p style="margin-bottom: 10px;">* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
-                ${ns.amount === '500,000đ' ? '☑' : '☐'} 500.000đ | 
-                ${ns.amount === '750,000đ' ? '☑' : '☐'} 750.000đ | 
-                ${ns.amount === '1,000,000đ' ? '☑' : '☐'} 1.000.000đ | 
-                ${ns.amount === 'custom' ? '☑' : '☐'} hơn 1.000.000đ, 
-                số tiền dư ra sẽ 
-                ${ns.submit === 'nop' ? '☑' : '☐'} Nộp | 
-                ${ns.submit === 'khong_nop' ? '☑' : '☐'} Không nộp vào 
-                ${ns.dest === 'stk' ? '☑' : '☐'} STK ${ns.dest === 'stk' && ns.stk ? ns.stk : '.........................'} | 
-                ${ns.dest === 'quy' ? '☑' : '☐'} Quỹ ${ns.dest === 'quy' ? fundNameNote : '.........................'} vào thứ 2 tuần kế tiếp.</p>
+                <p style="margin-bottom: 10px;">${nopNoteText}</p>
 
                 <p style="margin-bottom: 10px;">* Một số khuyến nghị cho tuần <strong>${tuan}</strong>:<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy.<br>
@@ -1962,17 +1990,17 @@
 
             <div style="margin-top: 15px;">
                 <div style="text-align: center; font-weight:bold; margin-bottom: 5px;">BẢNG HỆ SỐ NỘP QUỸ TUẦN ${tuan}</div>
-                <table class="p-fund-table">
+                <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
                     <tr>
-                        <th style="width: 5%;">STT</th>
-                        <th style="width: 8%;">Năm</th>
-                        <th style="width: 8%;">Tuần</th>
-                        <th style="width: 25%;">Tên Quỹ</th>
-                        <th style="width: 25%;">Đối tượng chi</th>
-                        <th style="width: 12%;">Hệ số nộp</th>
-                        <th style="width: 17%;">Thứ sẽ nộp</th>
+                        <th style="border: 1px solid #000; width: 5%; padding: 6px; text-align: center;">STT</th>
+                        <th style="border: 1px solid #000; width: 34%; padding: 6px; text-align: center;">Tên Quỹ</th>
+                        <th style="border: 1px solid #000; width: 10%; padding: 6px; text-align: center;">Hệ số nộp</th>
+                        <th style="border: none; width: 2%;"></th>
+                        <th style="border: 1px solid #000; width: 5%; padding: 6px; text-align: center;">STT</th>
+                        <th style="border: 1px solid #000; width: 34%; padding: 6px; text-align: center;">Tên Quỹ</th>
+                        <th style="border: 1px solid #000; width: 10%; padding: 6px; text-align: center;">Hệ số nộp</th>
                     </tr>
-                    ${fundRows.length > 0 ? fundRows : '<tr><td colspan="7" style="font-style:italic; color:#666;">Chưa có dữ liệu quỹ nộp trong tuần này.</td></tr>'}
+                    ${fundRows.length > 0 ? fundRows : '<tr><td colspan="7" style="border: 1px solid #000; padding: 6px; font-style:italic; color:#666; text-align: center;">Chưa có dữ liệu quỹ nộp trong tuần này.</td></tr>'}
                 </table>
                 <div style="text-align: right; font-weight: bold; margin-top: 5px;">
                     Tổng hệ số: ${totalFactor}<br>
