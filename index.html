@@ -415,6 +415,9 @@
             margin-right: 15px;
             cursor: pointer;
         }
+        .note-paragraph {
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 <body>
@@ -542,37 +545,44 @@
                     <label><input type="radio" name="note-amount" value="500,000đ" onchange="renderNoteDisplay()"> 500,000đ</label>
                     <label><input type="radio" name="note-amount" value="750,000đ" onchange="renderNoteDisplay()"> 750,000đ</label>
                     <label><input type="radio" name="note-amount" value="1,000,000đ" onchange="renderNoteDisplay()"> 1,000,000đ</label>
-                    <label><input type="radio" name="note-amount" value="custom" onchange="renderNoteDisplay()"> Khác: <input type="text" id="note-custom-amount" class="note-input" placeholder="Nhập số tiền..." oninput="dinhDangDauPhay(this); renderNoteDisplay()" style="width: 100px; padding: 2px; border: none; border-bottom: 1px dotted #000; background: transparent; font-family: inherit; font-size: inherit;"></label>
+                    <label><input type="radio" name="note-amount" value="custom" onchange="renderNoteDisplay()"> Khác: <input type="text" id="note-custom-amount" class="note-input" placeholder="Nhập số tiền..." oninput="dinhDangDauPhay(this); renderNoteDisplay()" style="width: 100px; padding: 2px; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;"></label>
                 </div>
                 <div>
                     <span style="font-weight: bold; margin-right:10px;">Nơi nộp:</span>
                     <label><input type="radio" name="note-dest" value="stk" onchange="renderNoteDisplay()"> STK</label>
-                    <input type="text" id="note-stk-input" class="note-input" placeholder="Nhập tên/số STK..." oninput="renderNoteDisplay()" style="width: 150px; display:none; padding: 3px;">
+                    <input type="text" id="note-stk-input" class="note-input" placeholder="Nhập tên/số STK..." oninput="renderNoteDisplay()" style="width: 150px; display:none; padding: 3px; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;">
                     
                     <label><input type="radio" name="note-dest" value="quy" onchange="renderNoteDisplay()"> Quỹ</label>
-                    <select id="note-quy-select" onchange="renderNoteDisplay()" style="display:none; padding: 3px; font-family: inherit;">
+                    <select id="note-quy-select" onchange="renderNoteDisplay()" style="display:none; padding: 3px; font-family: inherit; border: none; border-bottom: 1px dashed #000; background: transparent; outline: none;">
                         <option value="">-- Chọn Quỹ --</option>
                     </select>
                 </div>
             </div>
+
+            <div style="margin-bottom: 10px; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">Phần trăm được phép chi:</div>
+            <div>
+                Từ <input type="text" id="note-pct-min" class="note-input" value="85" style="width: 40px; text-align: center; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;" oninput="renderNoteDisplay()"> 
+                đến <input type="text" id="note-pct-max" class="note-input" value="100" style="width: 40px; text-align: center; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;" oninput="renderNoteDisplay()">
+            </div>
         </div>
 
         <div style="line-height: 1.8; text-align: justify; font-size: 16px;">
-            <p>
-                Kế hoạch chi tiêu tuần <strong id="note-tuan-2"></strong> được thiết kế và xây dựng bởi bộ phận Kế hoạch và Tài chánh trực thuộc TTQLDT<br>
-                Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày <strong id="note-ngay-duyet"></strong><br>
-                Mọi vấn đề cần được giải đáp liên hệ trực tiếp tại văn phòng Kế hoạch và Tài chánh<br>
-                <span id="note-display-budap">Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này</span><br>
-                Một số khuyến nghị cho tuần <strong id="note-tuan-3"></strong>:<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi: 85 đến 100
-            </p>
+            <p class="note-paragraph">* Kế hoạch chi tiêu tuần <strong id="note-tuan-2"></strong> được thiết kế và xây dựng bởi bộ phận Kế hoạch và Tài chánh trực thuộc TTQLDT.<br>
+            Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày <strong id="note-ngay-duyet"></strong>.<br>
+            Mọi vấn đề cần được giải đáp liên hệ trực tiếp tại văn phòng Kế hoạch và Tài chánh.</p>
+            
+            <p class="note-paragraph">* Trên đây là bản kế hoạch chi tiêu cho tuần <strong id="note-tuan"></strong>, có hiệu lực từ 00h00 ngày <strong id="note-tu-ngay"></strong>, hạn sử dụng tới 23h59 ngày <strong id="note-den-ngay"></strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>
+            Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
 
-            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 20px 0;">
+            <p class="note-paragraph" id="note-display-budap">* Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.</p>
 
-            <p>Trên đây là bản kế hoạch chi tiêu cho tuần <strong id="note-tuan"></strong>, có hiệu lực từ 00h00 ngày <strong id="note-tu-ngay"></strong>, hạn sử dụng tới 23h59 ngày <strong id="note-den-ngay"></strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
-            <p>Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán</p>
-            <p id="note-display-p3" style="font-weight: bold; color: #2c3e50;">Vui lòng bấm "Thay đổi nội dung" để cấu hình phần xử lý tiền dư.</p>
+            <p class="note-paragraph">* Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán và Phiếu yêu cầu cấp chi phí cho tuần tiếp theo.</p>
+
+            <p class="note-paragraph" id="note-display-p3" style="font-weight: bold; color: #2c3e50;">* Vui lòng bấm "Thay đổi nội dung" để cấu hình phần xử lý tiền dư.</p>
+
+            <p class="note-paragraph">* Một số khuyến nghị cho tuần <strong id="note-tuan-3"></strong>:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy.<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi: <span id="note-display-pct" style="font-weight:bold;">85 đến 100</span></p>
         </div>
     </div>
 </div>
@@ -920,7 +930,9 @@
             dest: document.querySelector('input[name="note-dest"]:checked')?.value || '',
             stk: document.getElementById('note-stk-input').value || '',
             quyId: document.getElementById('note-quy-select').value || '',
-            budap: document.querySelector('input[name="note-budap"]:checked')?.value || ''
+            budap: document.querySelector('input[name="note-budap"]:checked')?.value || '',
+            pctMin: document.getElementById('note-pct-min').value || '85',
+            pctMax: document.getElementById('note-pct-max').value || '100'
         };
 
         allWeeksData[currentWeekKey] = {
@@ -969,6 +981,8 @@
                 
                 document.getElementById('note-custom-amount').value = ns.customAmount || '';
                 document.getElementById('note-stk-input').value = ns.stk || '';
+                document.getElementById('note-pct-min').value = ns.pctMin || '85';
+                document.getElementById('note-pct-max').value = ns.pctMax || '100';
                 
                 setTimeout(() => {
                     updateNoteFundDropdown();
@@ -976,6 +990,8 @@
                     renderNoteDisplay();
                 }, 50);
             } else {
+                document.getElementById('note-pct-min').value = '85';
+                document.getElementById('note-pct-max').value = '100';
                 setTimeout(() => { updateNoteFundDropdown(); renderNoteDisplay(); }, 50);
             }
 
@@ -1001,6 +1017,8 @@
             document.querySelectorAll('input[name="note-budap"]').forEach(r => r.checked = false);
             document.getElementById('note-custom-amount').value = '';
             document.getElementById('note-stk-input').value = '';
+            document.getElementById('note-pct-min').value = '85';
+            document.getElementById('note-pct-max').value = '100';
             
             setTimeout(() => { updateNoteFundDropdown(); renderNoteDisplay(); }, 50);
         }
@@ -1067,11 +1085,11 @@
     function renderNoteDisplay() {
         // Lấy giá trị Bù đắp
         let budapVal = document.querySelector('input[name="note-budap"]:checked')?.value;
-        let budapText = "Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
+        let budapText = "* Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
         if (budapVal === 'không') {
-            budapText = "Nội các quyết định không sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
+            budapText = "* Nội các quyết định không sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
         } else if (budapVal === 'cho phép') {
-            budapText = "Nội các quyết định cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
+            budapText = "* Nội các quyết định cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
         }
         document.getElementById('note-display-budap').innerText = budapText;
 
@@ -1085,7 +1103,7 @@
         const quySelect = document.getElementById('note-quy-select');
         const nopOptions = document.getElementById('note-nop-options');
         
-        let displayText = "";
+        let displayText = "* ";
 
         if (amountVal === 'custom') {
             amountVal = customAmountInput.value ? customAmountInput.value + 'đ' : '...';
@@ -1093,7 +1111,7 @@
 
         if (submitVal === 'khong_nop') {
             nopOptions.style.display = 'none';
-            displayText = "Số tiền còn lại cuối mỗi tuần sẽ không nộp mà chuyển sang tuần sau.";
+            displayText += "Số tiền còn lại cuối mỗi tuần sẽ không nộp mà chuyển sang tuần sau.";
         } else if (submitVal === 'nop') {
             nopOptions.style.display = 'block';
             
@@ -1113,13 +1131,19 @@
                 quySelect.style.display = 'none';
             }
             
-            displayText = `Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ ${amountVal}, số tiền dư ra sẽ Nộp vào ${destText} vào thứ 2 tuần kế tiếp.`;
+            displayText += `Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ ${amountVal}, số tiền dư ra sẽ Nộp vào ${destText} vào thứ 2 tuần kế tiếp.`;
         } else {
             nopOptions.style.display = 'none';
-            displayText = "Vui lòng bấm 'Thay đổi nội dung' để cấu hình phần xử lý tiền dư.";
+            displayText += "Vui lòng bấm 'Thay đổi nội dung' để cấu hình phần xử lý tiền dư.";
         }
         
         document.getElementById('note-display-p3').innerText = displayText;
+
+        // Cập nhật hiển thị Phần trăm
+        const pctMin = document.getElementById('note-pct-min').value || '85';
+        const pctMax = document.getElementById('note-pct-max').value || '100';
+        document.getElementById('note-display-pct').innerText = `${pctMin} đến ${pctMax}`;
+
         scheduleSave();
     }
 
@@ -1582,11 +1606,17 @@
 
 </body>
 </html>
-Trong mục ghi chú các câu văn được chia như sau, mỗi dấu sao là một đoạn và có đánh dấu sao vào trước các đoạn văn đó và đoạn văn cuối trong bức ảnh đã bị thiếu "Phiếu yêu cầu cấp chi phí cho tuần tiếp theo"
-Sau khi chọn thiết lập, các đoạn văn sẽ được căn đều
-*Kế hoạch chi tiêu tuần...
-*Trên đây là...
-*Nội các...
-*Cuối mỗi ngày...
-*Số tiền còn lại... (khi được chọn là nộp còn không thì sẽ là: Số tiền còn lại...)
-*Một số...
+Trong mục ghi chú dòng này phải có format: - "Tên danh mục": "0 đ"
+- Tích lũy đến: ...đ
+- Tiền quỹ: 0 đ
+- Tiết kiệm: 0 đ
+- Ăn sáng: 0 đ
+- Ăn trưa: 0 đ
+- Ăn tối: 0 đ
+- Di chuyển: 0 đ
+- Khác: 0 đ
+Và các phần chữ phải in đậm, phần giá trị số thì không in đậm
+Các giá trị của các quỹ sẽ được lấy giá trị từ tuần tương ứng trong phần thời gian và khi hiển thị ra nó sẽ có định dạng: 0 đ
+Cụ thể ở giá trị của mục "Tích lũy đến" sẽ lấy thông tin được tính từ (tổng số dư hiện tại - tổng số tiền nộp quỹ (của bảng hệ số nộp quỹ tuần đang hiện ở phần thời gian)) (như trên chỉ có chữ Tích luỹ đến in đậm), "Tiết kiệm" cũng sẽ lấy giá trị ở mục tiết kiệm được tính toán trong mục nội dung chi tuần (cũng chỉ in đậm chữ Tiết kiệm), các mục còn lại sẽ được lấy thông tin từ "tiền chi tiêu tối đa (của bảng tổng kết quỹ - cột cuối cùng) * với số phần trăm được phép chi tương ứng với các cột bên đó, nhưng lưu ý đối với Ăn sáng, Ăn trưa, Ăn tối thì phải nhân thêm cho 7 (VD: Ăn sáng: Tiền tối đa * 10% * 7) (khi in ra cũng chỉ in đậm các chữ chứ ko in đậm số giá trị)
+Đoạn Tiền tối đa lấy thông tin từ Tổng số dư hiện tại trừ đi Tổng tiền nộp quỹ (lúc này ra giá trị a). Sau đó lấy giá trị a trừ đi Tiết kiệm (ở đây là mục Tiết kiệm (thuộc module nội dung chi tuần) (ra giá trị b)). Cuối cùng b / 1.1 = Tiền tối đa (số b là 110%)
+Và phần ghi chú phải có 1 nút Copy riêng biệt với nút thay đổi nội dung, nó có chức năng là copy text toàn bộ cái ghi chú khi mình bấm vào chứ không phải là copy ảnh hay phần tử HTML
