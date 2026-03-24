@@ -421,7 +421,7 @@
             margin-bottom: 12px;
         }
 
-        /* CSS KHU VỰC IN ẤN */
+        /* CSS KHU VỰC IN ẤN - Đã tinh chỉnh thu gọn tối đa */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -434,26 +434,35 @@
                 top: 0; 
                 width: 100%; 
                 font-family: "Times New Roman", Times, serif; 
-                font-size: 14.5px; 
+                font-size: 13px; /* Thu nhỏ base font size */
                 color: #000; 
                 background: #fff; 
+                line-height: 1.3;
             }
             .print-container {
-                padding: 0 20mm; /* Thụt lề trái phải cho cân đối, thanh thoát */
+                padding: 0 15mm; /* Ép lề để văn bản dàn ra đều */
             }
             
-            /* Bảng Kế hoạch viền đứt nét trên/dưới */
-            .p-table-kehoach { width: 100%; border-collapse: collapse; margin: 10px 0; border-top: 1.5px dashed #000; border-bottom: 1.5px dashed #000; }
-            .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 8px 4px; text-align: center; }
+            /* Ép kích thước để tự động fit 4 trang */
+            .p-table-kehoach { width: 100%; border-collapse: collapse; margin: 5px 0; border-top: 1.5px dashed #000; border-bottom: 1.5px dashed #000; }
+            .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 4px 2px; text-align: center; }
             .p-table-kehoach th { border-bottom: 1px dashed #000; }
             
-            .p-table-diengiai { width: 100%; border-collapse: collapse; }
-            .p-table-diengiai td { padding: 4px 5px; vertical-align: top; border: none; }
+            .p-table-diengiai { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 5px; }
+            .p-table-diengiai td { padding: 2px 4px; vertical-align: top; border: none; }
             
-            .p-fund-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 8px; text-align: center; }
+            .p-fund-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 12px; }
             
-            @page { size: A4; margin: 15mm; }
+            /* Khóa không rớt dòng cho các text tự thu nhỏ */
+            .auto-fit-text {
+                white-space: nowrap; 
+                overflow: hidden; 
+                text-overflow: ellipsis; 
+                width: 100%;
+            }
+
+            @page { size: A4; margin: 10mm 10mm; }
         }
     </style>
 </head>
@@ -966,12 +975,6 @@
     }
     function formatFloatInput(input) {
         let val = input.value.replace(/[^0-9.]/g, ''); 
-        
-        // Cập nhật để khi ấn "." đầu tiên sẽ biến thành "0."
-        if (val.startsWith('.')) {
-            val = '0' + val;
-        }
-
         let parts = val.split('.');
         if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
         if (parts.length === 2 && parts[1].length > 2) val = parts[0] + '.' + parts[1].substring(0, 2);
@@ -1928,11 +1931,12 @@
                 catItems.forEach(item => {
                     let title = `${item.nd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 40%; padding-left: 25px;">+ ${title}</td>
+                        <td style="width: 40%; padding-left: 25px;">
+                            <div class="auto-fit-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">+ ${title}</div>
+                        </td>
                         <td style="width: 15%; text-align:right;">${item.gia} đ</td>
                         <td style="width: 5%; text-align:right;">${item.sl}</td>
                         <td style="width: 15%; text-align:right;">${formatVND(item.total)}</td>
-                        <td style="width: 5%; text-align:right; font-size:18px;">☐</td>
                     </tr>`;
                 });
             });
@@ -2138,15 +2142,37 @@
         `;
 
         printArea.innerHTML = printContent;
+
+        // Auto-fit Font size
+        printArea.style.display = 'block';
+        printArea.style.position = 'absolute';
+        printArea.style.left = '-9999px';
+        printArea.style.width = '186mm';
+
+        const autoFitElements = printArea.querySelectorAll('.auto-fit-text');
+        autoFitElements.forEach(el => {
+            let fontSize = 13; 
+            el.style.fontSize = fontSize + 'px';
+            while (el.scrollWidth > el.clientWidth && fontSize > 8) {
+                fontSize -= 0.5;
+                el.style.fontSize = fontSize + 'px';
+            }
+        });
+
+        printArea.style.display = '';
+        printArea.style.position = '';
+        printArea.style.left = '';
+        printArea.style.width = '';
+
         setTimeout(() => window.print(), 200);
     }
 
-    window.onload = async function() { 
-        renderWeekUI(); 
+    window.onload = async function() { 
+        renderWeekUI(); 
         
         ensureExpenseDataStructure();
 
-        await loadFromFirebase(); 
+        await loadFromFirebase(); 
 
         const currentMonday = getMonday(getGMT7Date());
         let targetMonday = new Date(currentMonday);
@@ -2155,7 +2181,7 @@
         document.getElementById('input-in-ngay').value = formatToInputDate(targetMonday);
         updateInNgayDisplay();
 
-        loadWeek(targetMonday); 
+        loadWeek(targetMonday); 
 
         // Gắn sự kiện Auto-Save cho các mục trong Ghi chú
         document.querySelectorAll('#module-ghi-chu input[type="radio"]').forEach(cb => cb.addEventListener('change', scheduleSave));
@@ -2165,10 +2191,3 @@
 
 </body>
 </html>
-Trong mẫu bảng in ở bảng hệ số nộp quỹ có 12 viền bị lồi ra, hãy sửa lại (như trong ảnh đánh dâu đỏ)
-Ở bản in diễn giải cụ thể, nội dung nằm giữa các bảng kế hoạch được đánh dấu (--) thì sẽ chỉnh là đậm và có viền xám bên dưới(như trong ảnh mẫu thứ 2 đánh dấu xanh)
-Cụm "Tình trạng" canh lề cho nó bằng lề với chữ "Từ ngày" và nội dung trong tình trạng dời vô 1 chút (như trong mẫu thứ 3 đánh dấu cam)
-Bỏ "Tình trạng" ở bản in
-Thêm mục in Phiếu kiểm toán:
-+ Bảng In Phiếu kiểm toán này được lấy chung dữ liệu với phần mềm kiểm toán
-+ Mẫu In này được in ra hoàn toàn như ở phần mềm kiểm toán và có MSLT như trên mẫu in 1
