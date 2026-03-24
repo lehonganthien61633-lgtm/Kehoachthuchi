@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&display=swap');
-
         /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
@@ -439,7 +437,7 @@
                 background: #fff; 
             }
             .print-container {
-                padding: 0 12mm; /* Căn lề dời vô 1 chút cho đẹp */
+                /* Bỏ padding lớn để nội dung cân đối, khớp lề với mẫu cũ */
             }
             
             /* Bảng Kế hoạch không kẻ viền cứng, chỉ viền đứt nét trên/dưới */
@@ -1926,24 +1924,6 @@
             });
         }
 
-        let budapText = "* Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
-        if (ns.budap === 'không') {
-            budapText = "* Nội các quyết định không sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
-        } else if (ns.budap === 'cho phép') {
-            budapText = "* Nội các quyết định cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
-        }
-
-        let nopNoteText = "* Vui lòng cấu hình phần xử lý tiền dư.";
-        let amountVal = ns.amount === 'custom' ? (ns.customAmount ? ns.customAmount + 'đ' : '...') : (ns.amount || '...');
-        if (ns.submit === 'khong_nop') {
-            nopNoteText = "* Số tiền còn lại cuối mỗi tuần sẽ không nộp mà chuyển sang tuần sau.";
-        } else if (ns.submit === 'nop') {
-            let destText = "...";
-            if (ns.dest === 'stk') destText = "STK " + (ns.stk || "...");
-            else if (ns.dest === 'quy') destText = "Quỹ " + (fundNameNote !== "........................." ? fundNameNote : "...");
-            nopNoteText = `* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ ${amountVal}, số tiền dư ra sẽ Nộp vào ${destText} vào thứ 2 tuần kế tiếp.`;
-        }
-
         let printContent = `
         <div class="print-container">
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px;">
@@ -1951,10 +1931,22 @@
                 <div>Cập nhật ngày: 15/03/2026</div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                <div>
-                    <div style="font-size: 16px; font-weight:bold;">MSLT: ${tuan}-${pVer}/D01/TTQLDT-VPKHCT</div>
-                    <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
+            <div style="border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div style="font-size: 18px; font-weight:bold;">MSLT: ${tuan}-${pVer}/D01/TTQLDT-VPKHCT</div>
+                        <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; margin-top: 15px; font-style: italic;">
+                    <div style="width: 90px; padding-top: 2px;">Tình trạng:</div>
+                    <div style="flex: 1; line-height: 1.6;">
+                        ☑ Đang sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${tuNgayStr}</span> đến ngày <span style="display:inline-block; width:80px; text-align:center;">${denNgayStr}</span><br>
+                        ☐ Đã hết hạn sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
+                        ☐ Hiện đang lưu trữ tại bìa hồ sơ: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
+                        ☐ Đã hủy: ngày hủy: ....../ ....../ 20......., lý do: ....................................................
+                    </div>
                 </div>
             </div>
 
@@ -1968,7 +1960,7 @@
                 <div style="flex: 1; text-align: right; line-height: 1.5;">
                     <span style="font-weight:bold;">Tuần: ${tuan}</span><br>
                     Tháng: ${thangNam.replace('Tháng ', '').replace(' / Năm 2026', '').split(' |')[0]}/2026<br>
-                    Từ ngày: ${tuNgayStr} đến ngày: ${denNgayStr}<br>
+                    Từ ngày: ${tuNgayStr} đến ngày ${denNgayStr}<br>
                     <div style="display: flex; justify-content: flex-end; margin-top:5px;">
                         <span style="margin-right: 10px; font-weight:bold;">Tổng chi tuần dự kiến:</span>
                         <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; font-size:16px;">${formatVND(tongChiTuan)}</span>
@@ -1980,17 +1972,28 @@
 
             <div style="line-height: 1.8; text-align: justify; font-size: 14px; margin-top:25px; border-top: 1.5px solid #000; padding-top: 15px;">
                 <p style="margin-bottom: 10px;">* Kế hoạch chi tiêu tuần <strong>${tuan}</strong> được thiết kế và xây dựng bởi bộ phận Kế hoạch và Tài chánh trực thuộc TTQLDT.<br>
-                Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày <strong>${ngayDuyetStr}</strong>.<br>
+                <i style="font-weight:bold;">Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày ${ngayDuyetStr}</i>.<br>
                 Mọi vấn đề cần được giải đáp liên hệ trực tiếp tại văn phòng Kế hoạch và Tài chánh.</p>
                 
                 <p style="margin-bottom: 10px;">* Trên đây là bản kế hoạch chi tiêu cho tuần <strong>${tuan}</strong>, có hiệu lực từ 00h00 ngày <strong>${tuNgayStr}</strong>, hạn sử dụng tới 23h59 ngày <strong>${denNgayStr}</strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>
                 Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
 
-                <p style="margin-bottom: 10px;">${budapText}</p>
+                <p style="margin-bottom: 10px;">* Nội các quyết định 
+                ${ns.budap === 'không' ? '☑' : '☐'} không 
+                ${ns.budap === 'cho phép' ? '☑' : '☐'} cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.</p>
 
                 <p style="margin-bottom: 10px;">* Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán và Phiếu yêu cầu cấp chi phí cho tuần tiếp theo.</p>
 
-                <p style="margin-bottom: 10px;">${nopNoteText}</p>
+                <p style="margin-bottom: 10px;">* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
+                ${ns.amount === '500,000đ' ? '☑' : '☐'} 500.000đ | 
+                ${ns.amount === '750,000đ' ? '☑' : '☐'} 750.000đ | 
+                ${ns.amount === '1,000,000đ' ? '☑' : '☐'} 1.000.000đ | 
+                ${ns.amount === 'custom' ? '☑' : '☐'} hơn 1.000.000đ, 
+                số tiền dư ra sẽ 
+                ${ns.submit === 'nop' ? '☑' : '☐'} Nộp | 
+                ${ns.submit === 'khong_nop' ? '☑' : '☐'} Không nộp vào 
+                ${ns.dest === 'stk' ? '☑' : '☐'} STK ${ns.dest === 'stk' && ns.stk ? ns.stk : '.........................'} | 
+                ${ns.dest === 'quy' ? '☑' : '☐'} Quỹ ${ns.dest === 'quy' ? fundNameNote : '.........................'} vào thứ 2 tuần kế tiếp.</p>
 
                 <p style="margin-bottom: 10px;">* Một số khuyến nghị cho tuần <strong>${tuan}</strong>:<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy.<br>
@@ -2067,12 +2070,3 @@
 
 </body>
 </html>
-Trời ơi lề của nó bị lùi vô nhiều quá rồi, cho lề nó bằng với chữ Tình trạng ở mẫu cũ á.
-Sửa lại phần thông tin ngày tháng ở mẫu in như sau:
-Ví dụ:
-Tuần: 13
-Tháng: 3/2026
-Từ ngày: 23/03/2026 đến ngày 29/03/2026
-Và hãy in nghiêng "Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày 23/03/2026"
-Và ở cụm Tình trạng hãy để là in nghiêng
-Bỏ dòng "Tình trạng" nhưng các lựa chọn bên dưới vẫn giữ nguyên
