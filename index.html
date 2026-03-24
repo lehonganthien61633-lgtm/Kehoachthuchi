@@ -1069,9 +1069,9 @@
         let budapVal = document.querySelector('input[name="note-budap"]:checked')?.value;
         let budapText = "Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
         if (budapVal === 'không') {
-            budapText = "Nội các quyết định ☑ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
+            budapText = "Nội các quyết định không sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
         } else if (budapVal === 'cho phép') {
-            budapText = "Nội các quyết định ☐ không ☑ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
+            budapText = "Nội các quyết định cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này";
         }
         document.getElementById('note-display-budap').innerText = budapText;
 
@@ -1582,3 +1582,11 @@
 
 </body>
 </html>
+Trong mục ghi chú các câu văn được chia như sau, mỗi dấu sao là một đoạn và có đánh dấu sao vào trước các đoạn văn đó và đoạn văn cuối trong bức ảnh đã bị thiếu "Phiếu yêu cầu cấp chi phí cho tuần tiếp theo"
+Sau khi chọn thiết lập, các đoạn văn sẽ được căn đều
+*Kế hoạch chi tiêu tuần...
+*Trên đây là...
+*Nội các...
+*Cuối mỗi ngày...
+*Số tiền còn lại... (khi được chọn là nộp còn không thì sẽ là: Số tiền còn lại...)
+*Một số...
