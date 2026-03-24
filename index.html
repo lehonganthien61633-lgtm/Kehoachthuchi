@@ -418,6 +418,7 @@
                 </div>
             </div>
             <a onclick="switchModule('module-site-2')">Bảng Hệ Số Nộp Quỹ</a>
+            <a onclick="switchModule('module-ghi-chu')">Ghi chú</a>
         </div>
     </div>
     <h3 style="margin: 0; font-weight: bold; font-family: 'Times New Roman', Times, serif; letter-spacing: 1px;">KẾ HOẠCH CHI TIÊU <span id="save-status">Đang tải dữ liệu...</span></h3>
@@ -501,6 +502,26 @@
         </div>
 
         <p style="font-style: italic; color: #666; font-size: 14px; text-align: center; margin-top: 15px;">* Lưu ý: Mỗi 1 hệ số tương ứng 100.000đ. Khi nhập Hệ số và chọn Thứ, dữ liệu sẽ tự động cập nhật vào mục "Khác".</p>
+    </div>
+
+    <div id="module-ghi-chu" class="module">
+        <h2 class="module-title">Ghi Chú</h2>
+        <div style="line-height: 1.8; text-align: justify; font-size: 16px;">
+            <p>Trên đây là bản kế hoạch chi tiêu cho tuần <strong id="note-tuan"></strong>, có hiệu lực từ 00h00 ngày <strong id="note-tu-ngay"></strong>, hạn sử dụng tới 23h59 ngày <strong id="note-den-ngay"></strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
+            <p>Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán</p>
+            <p>Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
+                <label><input type="checkbox" class="note-cb"> 500,000đ</label> | 
+                <label><input type="checkbox" class="note-cb"> 750,000đ</label> | 
+                <label><input type="checkbox" class="note-cb"> 1,000,000đ</label> | 
+                <label><input type="checkbox" class="note-cb"> hơn 1,000,000đ</label>, 
+                số tiền dư ra sẽ 
+                <label><input type="checkbox" class="note-cb"> Nộp</label> | 
+                <label><input type="checkbox" class="note-cb"> Không nộp</label> vào 
+                <label><input type="checkbox" class="note-cb"> STK <input type="text" class="note-input" style="border:none; border-bottom: 1px dotted #000; width: 120px; outline:none; background: transparent; font-family: inherit; font-size: inherit;"></label> | 
+                <label><input type="checkbox" class="note-cb"> Quỹ <input type="text" class="note-input" style="border:none; border-bottom: 1px dotted #000; width: 150px; outline:none; background: transparent; font-family: inherit; font-size: inherit;"></label> 
+                vào thứ 2 tuần kế tiếp
+            </p>
+        </div>
     </div>
 </div>
 
@@ -838,9 +859,16 @@
                 day: row.querySelector('.fund-day').value
             });
         });
+
+        let notesState = {
+            checkboxes: Array.from(document.querySelectorAll('#module-ghi-chu .note-cb')).map(cb => cb.checked),
+            inputs: Array.from(document.querySelectorAll('#module-ghi-chu .note-input')).map(inp => inp.value)
+        };
+
         allWeeksData[currentWeekKey] = {
             expenses: JSON.parse(JSON.stringify(expenseData)),
-            funds: funds
+            funds: funds,
+            notesState: notesState
         };
     }
 
@@ -864,6 +892,16 @@
                 });
             }
             renderFundTable(allWeeksData[newKey].funds || [], targetMonday);
+            
+            if (allWeeksData[newKey].notesState) {
+                let ns = allWeeksData[newKey].notesState;
+                document.querySelectorAll('#module-ghi-chu .note-cb').forEach((cb, idx) => cb.checked = ns.checkboxes[idx] || false);
+                document.querySelectorAll('#module-ghi-chu .note-input').forEach((inp, idx) => inp.value = ns.inputs[idx] || '');
+            } else {
+                document.querySelectorAll('#module-ghi-chu .note-cb').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#module-ghi-chu .note-input').forEach(inp => inp.value = '');
+            }
+
         } else {
             daysArr.forEach(d => {
                 catsArr.forEach(c => expenseData[d][c] = []);
@@ -878,6 +916,9 @@
                 day: f.day  
             }));
             renderFundTable(carriedFunds, targetMonday);
+
+            document.querySelectorAll('#module-ghi-chu .note-cb').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#module-ghi-chu .note-input').forEach(inp => inp.value = '');
         }
 
         daysArr.forEach(d => {
@@ -900,7 +941,8 @@
         let sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
         document.getElementById("input-den-ngay").value = formatDisplayDate(sunday);
-        inputTuan.value = getISOWeekNumber(monday);
+        let isoWeek = getISOWeekNumber(monday);
+        inputTuan.value = isoWeek;
         const mMon = monday.getMonth() + 1, yMon = monday.getFullYear(), mSun = sunday.getMonth() + 1, ySun = sunday.getFullYear();
         document.getElementById("input-thang-nam").value = (yMon === ySun) ? ((mMon === mSun) ? `Tháng ${mMon} / Năm ${yMon}` : `Tháng ${mMon} | ${mSun} / Năm ${yMon}`) : `Tháng ${mMon}/${yMon} - Tháng ${mSun}/${ySun}`;
         for (let i = 0; i < daysArr.length; i++) {
@@ -909,6 +951,11 @@
             let el = document.getElementById(`ngay-${daysArr[i]}`);
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
+
+        // Update Ghi chú text
+        document.getElementById('note-tuan').innerText = isoWeek;
+        document.getElementById('note-tu-ngay').innerText = formatDisplayDate(monday);
+        document.getElementById('note-den-ngay').innerText = formatDisplayDate(sunday);
     }
 
     // ============================================ MODAL QUẢN LÝ QUỸ MỚI =================
@@ -1338,6 +1385,10 @@
         document.getElementById('input-tu-ngay').value = formatToInputDate(targetMonday);
         
         loadWeek(targetMonday); 
+
+        // Gắn sự kiện Auto-Save cho các mục trong Ghi chú
+        document.querySelectorAll('#module-ghi-chu .note-cb').forEach(cb => cb.addEventListener('change', scheduleSave));
+        document.querySelectorAll('#module-ghi-chu .note-input').forEach(inp => inp.addEventListener('input', scheduleSave));
     };
 </script>
 
