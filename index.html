@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&display=swap');
+
         /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
@@ -437,7 +439,7 @@
                 background: #fff; 
             }
             .print-container {
-                padding: 0 12mm; /* Căn lề dời vô một chút cho đẹp */
+                padding: 0 12mm; /* Căn lề dời vô 1 chút cho đẹp */
             }
             
             /* Bảng Kế hoạch không kẻ viền cứng, chỉ viền đứt nét trên/dưới */
@@ -447,6 +449,9 @@
             
             .p-table-diengiai { width: 100%; border-collapse: collapse; }
             .p-table-diengiai td { padding: 4px 5px; vertical-align: top; border: none; }
+            
+            .p-fund-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 8px; text-align: center; }
             
             @page { size: A4; margin: 15mm; }
         }
@@ -1787,6 +1792,10 @@
         let tuNgayStr = formatDisplayDate(tuNgayObj);
         let denNgayStr = formatDisplayDate(denNgayObj);
         
+        let outDateObj = new Date(denNgayObj);
+        outDateObj.setDate(denNgayObj.getDate() + 1);
+        let outDateStr = formatDisplayDate(outDateObj);
+
         let approvalDateObj = new Date(tuNgayObj);
         approvalDateObj.setDate(tuNgayObj.getDate() - 1);
         let ngayDuyetStr = formatDisplayDate(approvalDateObj);
@@ -2058,3 +2067,12 @@
 
 </body>
 </html>
+Trời ơi lề của nó bị lùi vô nhiều quá rồi, cho lề nó bằng với chữ Tình trạng ở mẫu cũ á.
+Sửa lại phần thông tin ngày tháng ở mẫu in như sau:
+Ví dụ:
+Tuần: 13
+Tháng: 3/2026
+Từ ngày: 23/03/2026 đến ngày 29/03/2026
+Và hãy in nghiêng "Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày 23/03/2026"
+Và ở cụm Tình trạng hãy để là in nghiêng
+Bỏ dòng "Tình trạng" nhưng các lựa chọn bên dưới vẫn giữ nguyên
