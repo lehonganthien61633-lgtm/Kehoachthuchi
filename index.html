@@ -542,7 +542,7 @@
                     <label><input type="radio" name="note-amount" value="500,000đ" onchange="renderNoteDisplay()"> 500,000đ</label>
                     <label><input type="radio" name="note-amount" value="750,000đ" onchange="renderNoteDisplay()"> 750,000đ</label>
                     <label><input type="radio" name="note-amount" value="1,000,000đ" onchange="renderNoteDisplay()"> 1,000,000đ</label>
-                    <label><input type="radio" name="note-amount" value="custom" onchange="renderNoteDisplay()"> Khác: <input type="text" id="note-custom-amount" class="note-input" placeholder="Nhập số tiền..." oninput="renderNoteDisplay()" style="width: 100px; padding: 2px; border: none; border-bottom: 1px dotted #000; background: transparent; font-family: inherit; font-size: inherit;"></label>
+                    <label><input type="radio" name="note-amount" value="custom" onchange="renderNoteDisplay()"> Khác: <input type="text" id="note-custom-amount" class="note-input" placeholder="Nhập số tiền..." oninput="dinhDangDauPhay(this); renderNoteDisplay()" style="width: 100px; padding: 2px; border: none; border-bottom: 1px dotted #000; background: transparent; font-family: inherit; font-size: inherit;"></label>
                 </div>
                 <div>
                     <span style="font-weight: bold; margin-right:10px;">Nơi nộp:</span>
@@ -1088,7 +1088,7 @@
         let displayText = "";
 
         if (amountVal === 'custom') {
-            amountVal = customAmountInput.value || '...';
+            amountVal = customAmountInput.value ? customAmountInput.value + 'đ' : '...';
         }
 
         if (submitVal === 'khong_nop') {
