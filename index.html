@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&display=swap');
+
         /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
@@ -795,6 +797,12 @@
     // Hàm giới hạn tỷ lệ phần trăm từ 0-100 và cho phép số thập phân
     function validatePercent(input) {
         let val = input.value.replace(/[^0-9.]/g, ''); 
+        
+        // Cập nhật để khi ấn "." đầu tiên sẽ biến thành "0."
+        if (val.startsWith('.')) {
+            val = '0' + val;
+        }
+
         let parts = val.split('.');
         if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
         
@@ -958,6 +966,12 @@
     }
     function formatFloatInput(input) {
         let val = input.value.replace(/[^0-9.]/g, ''); 
+        
+        // Cập nhật để khi ấn "." đầu tiên sẽ biến thành "0."
+        if (val.startsWith('.')) {
+            val = '0' + val;
+        }
+
         let parts = val.split('.');
         if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
         if (parts.length === 2 && parts[1].length > 2) val = parts[0] + '.' + parts[1].substring(0, 2);
@@ -2127,12 +2141,12 @@
         setTimeout(() => window.print(), 200);
     }
 
-    window.onload = async function() { 
-        renderWeekUI(); 
+    window.onload = async function() { 
+        renderWeekUI(); 
         
         ensureExpenseDataStructure();
 
-        await loadFromFirebase(); 
+        await loadFromFirebase(); 
 
         const currentMonday = getMonday(getGMT7Date());
         let targetMonday = new Date(currentMonday);
@@ -2141,7 +2155,7 @@
         document.getElementById('input-in-ngay').value = formatToInputDate(targetMonday);
         updateInNgayDisplay();
 
-        loadWeek(targetMonday); 
+        loadWeek(targetMonday); 
 
         // Gắn sự kiện Auto-Save cho các mục trong Ghi chú
         document.querySelectorAll('#module-ghi-chu input[type="radio"]').forEach(cb => cb.addEventListener('change', scheduleSave));
@@ -2151,3 +2165,10 @@
 
 </body>
 </html>
+Trong mẫu bảng in ở bảng hệ số nộp quỹ có 12 viền bị lồi ra, hãy sửa lại (như trong ảnh đánh dâu đỏ)
+Ở bản in diễn giải cụ thể, nội dung nằm giữa các bảng kế hoạch được đánh dấu (--) thì sẽ chỉnh là đậm và có viền xám bên dưới(như trong ảnh mẫu thứ 2 đánh dấu xanh)
+Cụm "Tình trạng" canh lề cho nó bằng lề với chữ "Từ ngày" và nội dung trong tình trạng dời vô 1 chút (như trong mẫu thứ 3 đánh dấu cam)
+Bỏ "Tình trạng" ở bản in
+Thêm mục in Phiếu kiểm toán:
++ Bảng In Phiếu kiểm toán này được lấy chung dữ liệu với phần mềm kiểm toán
++ Mẫu In này được in ra hoàn toàn như ở phần mềm kiểm toán và có MSLT như trên mẫu in 1
