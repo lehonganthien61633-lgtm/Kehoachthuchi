@@ -559,10 +559,10 @@
                 </div>
             </div>
 
-            <div style="margin-bottom: 10px; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">Phần trăm được phép chi:</div>
+            <div style="margin-bottom: 10px; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">Phần trăm được phép chi (0-100):</div>
             <div>
-                Từ <input type="text" id="note-pct-min" class="note-input" value="85" style="width: 40px; text-align: center; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;" oninput="renderNoteDisplay()"> 
-                đến <input type="text" id="note-pct-max" class="note-input" value="100" style="width: 40px; text-align: center; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;" oninput="renderNoteDisplay()">
+                Từ <input type="text" id="note-pct-min" class="note-input" value="85" style="width: 40px; text-align: center; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;" oninput="validatePercent(this); renderNoteDisplay()"> 
+                đến <input type="text" id="note-pct-max" class="note-input" value="100" style="width: 40px; text-align: center; border: none; border-bottom: 1px dashed #000; background: transparent; font-family: inherit; font-size: inherit;" oninput="validatePercent(this); renderNoteDisplay()">
             </div>
         </div>
 
@@ -703,6 +703,20 @@
                 if (!Array.isArray(expenseData[d][c])) expenseData[d][c] = [];
             });
         });
+    }
+
+    // Hàm giới hạn tỷ lệ phần trăm từ 0-100 và cho phép số thập phân
+    function validatePercent(input) {
+        let val = input.value.replace(/[^0-9.]/g, ''); 
+        let parts = val.split('.');
+        if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+        
+        if (val !== '') {
+            let num = parseFloat(val);
+            if (num < 0) val = '0';
+            if (num > 100) val = '100';
+        }
+        input.value = val;
     }
 
     /* ================= FIREBASE LOGIC ================= */
@@ -1606,17 +1620,3 @@
 
 </body>
 </html>
-Trong mục ghi chú dòng này phải có format: - "Tên danh mục": "0 đ"
-- Tích lũy đến: ...đ
-- Tiền quỹ: 0 đ
-- Tiết kiệm: 0 đ
-- Ăn sáng: 0 đ
-- Ăn trưa: 0 đ
-- Ăn tối: 0 đ
-- Di chuyển: 0 đ
-- Khác: 0 đ
-Và các phần chữ phải in đậm, phần giá trị số thì không in đậm
-Các giá trị của các quỹ sẽ được lấy giá trị từ tuần tương ứng trong phần thời gian và khi hiển thị ra nó sẽ có định dạng: 0 đ
-Cụ thể ở giá trị của mục "Tích lũy đến" sẽ lấy thông tin được tính từ (tổng số dư hiện tại - tổng số tiền nộp quỹ (của bảng hệ số nộp quỹ tuần đang hiện ở phần thời gian)) (như trên chỉ có chữ Tích luỹ đến in đậm), "Tiết kiệm" cũng sẽ lấy giá trị ở mục tiết kiệm được tính toán trong mục nội dung chi tuần (cũng chỉ in đậm chữ Tiết kiệm), các mục còn lại sẽ được lấy thông tin từ "tiền chi tiêu tối đa (của bảng tổng kết quỹ - cột cuối cùng) * với số phần trăm được phép chi tương ứng với các cột bên đó, nhưng lưu ý đối với Ăn sáng, Ăn trưa, Ăn tối thì phải nhân thêm cho 7 (VD: Ăn sáng: Tiền tối đa * 10% * 7) (khi in ra cũng chỉ in đậm các chữ chứ ko in đậm số giá trị)
-Đoạn Tiền tối đa lấy thông tin từ Tổng số dư hiện tại trừ đi Tổng tiền nộp quỹ (lúc này ra giá trị a). Sau đó lấy giá trị a trừ đi Tiết kiệm (ở đây là mục Tiết kiệm (thuộc module nội dung chi tuần) (ra giá trị b)). Cuối cùng b / 1.1 = Tiền tối đa (số b là 110%)
-Và phần ghi chú phải có 1 nút Copy riêng biệt với nút thay đổi nội dung, nó có chức năng là copy text toàn bộ cái ghi chú khi mình bấm vào chứ không phải là copy ảnh hay phần tử HTML
