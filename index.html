@@ -437,10 +437,10 @@
                 background: #fff; 
             }
             .print-container {
-                /* Bỏ padding lớn để nội dung cân đối, khớp lề với mẫu cũ */
+                padding: 0 20mm; /* Thụt lề trái phải cho cân đối, thanh thoát */
             }
             
-            /* Bảng Kế hoạch không kẻ viền cứng, chỉ viền đứt nét trên/dưới */
+            /* Bảng Kế hoạch viền đứt nét trên/dưới */
             .p-table-kehoach { width: 100%; border-collapse: collapse; margin: 10px 0; border-top: 1.5px dashed #000; border-bottom: 1.5px dashed #000; }
             .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 8px 4px; text-align: center; }
             .p-table-kehoach th { border-bottom: 1px dashed #000; }
@@ -643,9 +643,10 @@
                 <tr>
                     <th style="width: 5%;">STT</th>
                     <th style="width: 20%;">Thời Gian In</th>
-                    <th style="width: 15%;">Tuần In</th>
+                    <th style="width: 10%;">Tuần In</th>
                     <th style="width: 20%;">MSLT</th>
-                    <th style="width: 25%;">Mã Đối Soát</th>
+                    <th style="width: 20%;">Mã Đối Soát</th>
+                    <th style="width: 10%;">Hủy</th>
                     <th style="width: 15%;">Hành Động</th>
                 </tr>
             </thead>
@@ -742,6 +743,23 @@
         </table>
         <button type="button" class="btn-add-row" onclick="addFundManagerRow()">+ Thêm quỹ</button>
         <button type="button" class="btn-save" onclick="saveFundManager()">Hoàn thành</button>
+    </div>
+</div>
+
+<div id="modal-cancel-print" class="modal" style="z-index: 60;">
+    <div class="modal-content" style="max-width:400px;">
+        <span class="close" onclick="document.getElementById('modal-cancel-print').style.display='none'">&times;</span>
+        <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Xác nhận hủy bản in</h2>
+        <div class="form-group" style="display:block;">
+            <label style="display:block; margin-bottom: 5px;">Ngày hủy:</label>
+            <input type="date" id="cancel-date" style="width:100%;">
+        </div>
+        <div class="form-group" style="display:block;">
+            <label style="display:block; margin-bottom: 5px;">Lý do hủy:</label>
+            <input type="text" id="cancel-reason" placeholder="Nhập lý do..." style="width:100%;">
+        </div>
+        <input type="hidden" id="cancel-hist-index">
+        <button type="button" class="btn-save" style="background-color:#e74c3c;" onclick="confirmCancelPrint()">Xác nhận hủy</button>
     </div>
 </div>
 
@@ -1694,25 +1712,62 @@
         const tbody = document.getElementById('print-history-tbody');
         tbody.innerHTML = '';
         if (printHistory.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="color:#666; font-style:italic;">Chưa có bản in nào.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#666; font-style:italic;">Chưa có bản in nào.</td></tr>';
             return;
         }
         
-        let reversedHistory = [...printHistory].reverse();
-        reversedHistory.forEach((hist, index) => {
+        for (let i = printHistory.length - 1; i >= 0; i--) {
+            let hist = printHistory[i];
+            let isCancelled = hist.cancelData && hist.cancelData.isCancelled;
+            
             let tr = document.createElement('tr');
+            if (isCancelled) tr.style.backgroundColor = '#ffeeee';
+            
             tr.innerHTML = `
-                <td>${index + 1}</td>
+                <td>${i + 1}</td>
                 <td style="font-weight: bold;">${hist.timeStr}</td>
                 <td>Tuần ${hist.week}</td>
                 <td>${hist.week}-${hist.pVer || 0}/D01/TTQLDT-VPKHCT</td>
                 <td style="font-family: monospace; font-size: 16px;">${hist.asciiCode}</td>
                 <td>
-                    <button class="btn-sample" style="margin: 0; padding: 5px 10px;" onclick="reprint('${hist.dateStr}', '${hist.asciiCode}', '${hist.timeStr}', ${hist.pVer || 0})">In Bản Sao</button>
+                    <input type="checkbox" ${isCancelled ? 'checked disabled' : `onclick="openCancelModal(${i}); return false;"`} style="width:20px; height:20px; cursor:pointer;">
+                </td>
+                <td>
+                    <button class="btn-sample" style="margin: 0; padding: 5px 10px;" onclick="reprint(${i})">In Bản Sao</button>
                 </td>
             `;
             tbody.appendChild(tr);
-        });
+        }
+    }
+
+    function openCancelModal(index) {
+        document.getElementById('cancel-hist-index').value = index;
+        document.getElementById('cancel-date').value = formatToInputDate(new Date()); 
+        document.getElementById('cancel-reason').value = '';
+        document.getElementById('modal-cancel-print').style.display = 'block';
+    }
+
+    function confirmCancelPrint() {
+        let idx = document.getElementById('cancel-hist-index').value;
+        let cDate = document.getElementById('cancel-date').value;
+        let cReason = document.getElementById('cancel-reason').value.trim();
+        
+        if (!cDate || !cReason) {
+            alert('Vui lòng nhập đầy đủ ngày và lý do hủy!');
+            return;
+        }
+        
+        if (printHistory[idx]) {
+            printHistory[idx].cancelData = {
+                isCancelled: true,
+                date: cDate,
+                reason: cReason
+            };
+            scheduleSave();
+            renderPrintHistory();
+            document.getElementById('modal-cancel-print').style.display = 'none';
+            alert('Đã hủy bản in thành công!');
+        }
     }
 
     function executePrint() {
@@ -1763,25 +1818,26 @@
             scheduleSave();
             renderPrintHistory();
 
-            doPrint(printMonday, asciiCode, printTime, printDate, pVer, false);
+            doPrint(printMonday, asciiCode, printTime, printDate, pVer, false, null);
         }, 100);
     }
 
-    function reprint(dateStr, asciiCode, fullTimeStr, pVer) {
-        let printMonday = getMonday(new Date(dateStr));
+    function reprint(index) {
+        let hist = printHistory[index];
+        let printMonday = getMonday(new Date(hist.dateStr));
         saveCurrentWeekLocally();
         loadWeek(printMonday);
         
-        let parts = fullTimeStr.split(' | ');
+        let parts = hist.timeStr.split(' | ');
         let timeStr = parts[0] || '';
         let dateDisplayStr = parts[1] || '';
 
         setTimeout(() => {
-            doPrint(printMonday, asciiCode, timeStr, dateDisplayStr, pVer, true);
+            doPrint(printMonday, hist.asciiCode, timeStr, dateDisplayStr, hist.pVer || 0, true, hist.cancelData);
         }, 100);
     }
 
-    function doPrint(tuNgayObj, asciiCode, printTime, printDate, pVer, isReprint = false) {
+    function doPrint(tuNgayObj, asciiCode, printTime, printDate, pVer, isReprint = false, cancelData = null) {
         const printArea = document.getElementById('print-area');
         
         let denNgayObj = new Date(tuNgayObj);
@@ -1924,6 +1980,46 @@
             });
         }
 
+        let budapText = "* Nội các quyết định ☐ không ☐ cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
+        if (ns.budap === 'không') {
+            budapText = "* Nội các quyết định không sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
+        } else if (ns.budap === 'cho phép') {
+            budapText = "* Nội các quyết định cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.";
+        }
+
+        let nopNoteText = "* Vui lòng cấu hình phần xử lý tiền dư.";
+        let amountVal = ns.amount === 'custom' ? (ns.customAmount ? ns.customAmount + 'đ' : '...') : (ns.amount || '...');
+        if (ns.submit === 'khong_nop') {
+            nopNoteText = "* Số tiền còn lại cuối mỗi tuần sẽ không nộp mà chuyển sang tuần sau.";
+        } else if (ns.submit === 'nop') {
+            let destText = "...";
+            if (ns.dest === 'stk') destText = "STK " + (ns.stk || "...");
+            else if (ns.dest === 'quy') destText = "Quỹ " + (fundNameNote !== "........................." ? fundNameNote : "...");
+            nopNoteText = `* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ ${amountVal}, số tiền dư ra sẽ Nộp vào ${destText} vào thứ 2 tuần kế tiếp.`;
+        }
+
+        let tinhTrangHtml = '';
+        if (cancelData && cancelData.isCancelled) {
+            let cDateStr = formatDisplayDate(new Date(cancelData.date));
+            tinhTrangHtml = `
+                <div style="font-style: italic;">
+                    ☑ Đang sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${tuNgayStr}</span> đến ngày <span style="display:inline-block; width:80px; text-align:center; font-weight:bold;">${cDateStr}</span><br>
+                    ☐ Đã hết hạn sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
+                    ☑ Hiện đang lưu trữ tại bìa hồ sơ: từ ngày <span style="display:inline-block; width:80px; text-align:center; font-weight:bold;">${cDateStr}</span> trở đi<br>
+                    ☑ Đã hủy: ngày hủy: <span style="font-weight:bold;">${cDateStr}</span>, lý do: <span style="font-weight:bold;">${cancelData.reason}</span>
+                </div>
+            `;
+        } else {
+             tinhTrangHtml = `
+                <div style="font-style: italic;">
+                    ☑ Đang sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${tuNgayStr}</span> đến ngày <span style="display:inline-block; width:80px; text-align:center;">${denNgayStr}</span><br>
+                    ☐ Đã hết hạn sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
+                    ☐ Hiện đang lưu trữ tại bìa hồ sơ: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
+                    ☐ Đã hủy: ngày hủy: ....../ ....../ 20......., lý do: ....................................................
+                </div>
+            `;
+        }
+
         let printContent = `
         <div class="print-container">
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px;">
@@ -1940,12 +2036,8 @@
                 </div>
 
                 <div style="display: flex; align-items: flex-start; margin-top: 15px; font-style: italic;">
-                    <div style="width: 90px; padding-top: 2px;">Tình trạng:</div>
                     <div style="flex: 1; line-height: 1.6;">
-                        ☑ Đang sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${tuNgayStr}</span> đến ngày <span style="display:inline-block; width:80px; text-align:center;">${denNgayStr}</span><br>
-                        ☐ Đã hết hạn sử dụng: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
-                        ☐ Hiện đang lưu trữ tại bìa hồ sơ: từ ngày <span style="display:inline-block; width:80px; text-align:center;">${outDateStr}</span> trở đi<br>
-                        ☐ Đã hủy: ngày hủy: ....../ ....../ 20......., lý do: ....................................................
+                        ${tinhTrangHtml}
                     </div>
                 </div>
             </div>
@@ -1978,22 +2070,11 @@
                 <p style="margin-bottom: 10px;">* Trên đây là bản kế hoạch chi tiêu cho tuần <strong>${tuan}</strong>, có hiệu lực từ 00h00 ngày <strong>${tuNgayStr}</strong>, hạn sử dụng tới 23h59 ngày <strong>${denNgayStr}</strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>
                 Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
 
-                <p style="margin-bottom: 10px;">* Nội các quyết định 
-                ${ns.budap === 'không' ? '☑' : '☐'} không 
-                ${ns.budap === 'cho phép' ? '☑' : '☐'} cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.</p>
+                <p style="margin-bottom: 10px;">${budapText}</p>
 
                 <p style="margin-bottom: 10px;">* Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán và Phiếu yêu cầu cấp chi phí cho tuần tiếp theo.</p>
 
-                <p style="margin-bottom: 10px;">* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
-                ${ns.amount === '500,000đ' ? '☑' : '☐'} 500.000đ | 
-                ${ns.amount === '750,000đ' ? '☑' : '☐'} 750.000đ | 
-                ${ns.amount === '1,000,000đ' ? '☑' : '☐'} 1.000.000đ | 
-                ${ns.amount === 'custom' ? '☑' : '☐'} hơn 1.000.000đ, 
-                số tiền dư ra sẽ 
-                ${ns.submit === 'nop' ? '☑' : '☐'} Nộp | 
-                ${ns.submit === 'khong_nop' ? '☑' : '☐'} Không nộp vào 
-                ${ns.dest === 'stk' ? '☑' : '☐'} STK ${ns.dest === 'stk' && ns.stk ? ns.stk : '.........................'} | 
-                ${ns.dest === 'quy' ? '☑' : '☐'} Quỹ ${ns.dest === 'quy' ? fundNameNote : '.........................'} vào thứ 2 tuần kế tiếp.</p>
+                <p style="margin-bottom: 10px;">${nopNoteText}</p>
 
                 <p style="margin-bottom: 10px;">* Một số khuyến nghị cho tuần <strong>${tuan}</strong>:<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy.<br>
