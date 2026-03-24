@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kế Hoạch Chi Tiêu</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&display=swap');
-
         /* Tùy chỉnh Font và Giao diện tổng thể */
         body {
             font-family: "Times New Roman", Times, serif;
@@ -434,17 +432,16 @@
                 top: 0; 
                 width: 100%; 
                 font-family: "Times New Roman", Times, serif; 
-                font-size: 13px; 
+                font-size: 14px; 
                 color: #000; 
                 background: #fff; 
             }
-            .p-box-heavy { border: 2px solid #000; padding: 10px; margin-bottom: 10px; }
             .p-table-kehoach { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-            .p-table-kehoach th, .p-table-kehoach td { border: 1px solid #000; padding: 4px; text-align: center; }
+            .p-table-kehoach th, .p-table-kehoach td { border: 1px solid #000; padding: 6px; text-align: center; }
             .p-table-diengiai { width: 100%; border-collapse: collapse; }
-            .p-table-diengiai td { padding: 3px 5px; vertical-align: top; border: none; }
-            .p-fund-table { width: 80%; border-collapse: collapse; margin: 0 auto; }
-            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 4px; text-align: center; }
+            .p-table-diengiai td { padding: 4px 5px; vertical-align: top; border: none; }
+            .p-fund-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 6px; text-align: center; }
             @page { size: A4; margin: 15mm; }
         }
     </style>
@@ -636,9 +633,10 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">STT</th>
-                    <th style="width: 30%;">Thời Gian In</th>
+                    <th style="width: 20%;">Thời Gian In</th>
                     <th style="width: 15%;">Tuần In</th>
-                    <th style="width: 35%;">Mã Đối Soát</th>
+                    <th style="width: 20%;">MSLT</th>
+                    <th style="width: 25%;">Mã Đối Soát</th>
                     <th style="width: 15%;">Hành Động</th>
                 </tr>
             </thead>
@@ -743,7 +741,7 @@
     const DB_URL = "https://kehoachthuchi-b923b-default-rtdb.asia-southeast1.firebasedatabase.app/appData.json";
 
     const daysArr = ['thu-2', 'thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
-    const daysName = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
+    const daysName = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chúa nhật'];
     const catsArr = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
     const catsName = ['Ăn sáng', 'Ăn trưa', 'Ăn tối', 'Di chuyển', 'Tiết kiệm', 'Khác'];
     
@@ -751,7 +749,7 @@
     let currentWeekKey = '';
     let expenseData = {};
     let sampleExpenses = []; 
-    let printHistory = []; // Thêm biến lưu lịch sử in
+    let printHistory = []; 
     let currentDay = '';
     let currentCat = '';
     let targetRowForSample = null;
@@ -1016,7 +1014,9 @@
         allWeeksData[currentWeekKey] = {
             expenses: JSON.parse(JSON.stringify(expenseData)),
             funds: funds,
-            notesState: notesState
+            notesState: notesState,
+            printVersion: allWeeksData[currentWeekKey]?.printVersion || 0,
+            lastPrintedDataHash: allWeeksData[currentWeekKey]?.lastPrintedDataHash || null
         };
     }
 
@@ -1685,7 +1685,7 @@
         const tbody = document.getElementById('print-history-tbody');
         tbody.innerHTML = '';
         if (printHistory.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color:#666; font-style:italic;">Chưa có bản in nào.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="color:#666; font-style:italic;">Chưa có bản in nào.</td></tr>';
             return;
         }
         
@@ -1696,9 +1696,10 @@
                 <td>${index + 1}</td>
                 <td style="font-weight: bold;">${hist.timeStr}</td>
                 <td>Tuần ${hist.week}</td>
+                <td>${hist.week}-${hist.pVer || 0}</td>
                 <td style="font-family: monospace; font-size: 16px;">${hist.asciiCode}</td>
                 <td>
-                    <button class="btn-sample" style="margin: 0; padding: 5px 10px;" onclick="reprint('${hist.dateStr}', '${hist.asciiCode}', '${hist.timeStr}')">In Bản Sao</button>
+                    <button class="btn-sample" style="margin: 0; padding: 5px 10px;" onclick="reprint('${hist.dateStr}', '${hist.asciiCode}', '${hist.timeStr}', ${hist.pVer || 0})">In Bản Sao</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1711,6 +1712,29 @@
         let printMonday = getMonday(new Date(printDateStr));
         
         saveCurrentWeekLocally();
+        let weekKey = getWeekKey(printMonday);
+        
+        // MSLT Logic tracking
+        let currentDataStr = JSON.stringify({
+            exp: expenseData,
+            funds: allWeeksData[weekKey]?.funds || [],
+            notes: allWeeksData[weekKey]?.notesState || {},
+            tm: document.getElementById('input-tien-mat').value,
+            nh: document.getElementById('input-ngan-hang').value
+        });
+        
+        let pVer = 0;
+        if (allWeeksData[weekKey].printVersion === undefined) {
+            allWeeksData[weekKey].printVersion = 0;
+            allWeeksData[weekKey].lastPrintedDataHash = currentDataStr;
+        } else {
+            if (allWeeksData[weekKey].lastPrintedDataHash !== currentDataStr) {
+                allWeeksData[weekKey].printVersion++;
+                allWeeksData[weekKey].lastPrintedDataHash = currentDataStr;
+            }
+            pVer = allWeeksData[weekKey].printVersion;
+        }
+
         loadWeek(printMonday);
         
         setTimeout(() => {
@@ -1724,16 +1748,17 @@
                 timeStr: fullTimeStr,
                 week: getISOWeekNumber(printMonday),
                 dateStr: formatToInputDate(printMonday),
-                asciiCode: asciiCode
+                asciiCode: asciiCode,
+                pVer: pVer
             });
             scheduleSave();
             renderPrintHistory();
 
-            doPrint(printMonday, asciiCode, printTime, printDate, false);
+            doPrint(printMonday, asciiCode, printTime, printDate, pVer, false);
         }, 100);
     }
 
-    function reprint(dateStr, asciiCode, fullTimeStr) {
+    function reprint(dateStr, asciiCode, fullTimeStr, pVer) {
         let printMonday = getMonday(new Date(dateStr));
         saveCurrentWeekLocally();
         loadWeek(printMonday);
@@ -1743,11 +1768,11 @@
         let dateDisplayStr = parts[1] || '';
 
         setTimeout(() => {
-            doPrint(printMonday, asciiCode, timeStr, dateDisplayStr, true);
+            doPrint(printMonday, asciiCode, timeStr, dateDisplayStr, pVer, true);
         }, 100);
     }
 
-    function doPrint(tuNgayObj, asciiCode, printTime, printDate, isReprint = false) {
+    function doPrint(tuNgayObj, asciiCode, printTime, printDate, pVer, isReprint = false) {
         const printArea = document.getElementById('print-area');
         
         let denNgayObj = new Date(tuNgayObj);
@@ -1756,10 +1781,6 @@
         let tuNgayStr = formatDisplayDate(tuNgayObj);
         let denNgayStr = formatDisplayDate(denNgayObj);
         
-        let outDateObj = new Date(denNgayObj);
-        outDateObj.setDate(denNgayObj.getDate() + 1);
-        let outDateStr = formatDisplayDate(outDateObj);
-
         let approvalDateObj = new Date(tuNgayObj);
         approvalDateObj.setDate(tuNgayObj.getDate() - 1);
         let ngayDuyetStr = formatDisplayDate(approvalDateObj);
@@ -1774,7 +1795,6 @@
         let tongSoDu = formatVND(tienMat + nganHang);
 
         let now = new Date();
-
         let weekKey = getWeekKey(tuNgayObj);
         let ns = (allWeeksData[weekKey] && allWeeksData[weekKey].notesState) ? allWeeksData[weekKey].notesState : {};
 
@@ -1796,82 +1816,64 @@
             });
             tongChiTuan += dayTotal;
 
-            if (dayTotal > 0 || catsArr.some(c => expenseData[day][c].length > 0)) {
-                daysHtml += `
-                <div style="text-align: center; border-top: 1px dashed #000; margin: 15px 0;"></div>
-                <div style="text-align: center; margin-bottom: 10px;">${daysName[idx]}<br>${dateStr}</div>
-                <div>* Kế hoạch</div>
-                <table class="p-table-kehoach">
-                    <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
-                    <tr>${kehoachCells}</tr>
-                </table>
-                <div style="margin-top: 5px; font-weight: normal;">* Tổng chi dự kiến: ${formatVND(dayTotal).replace(/\s/g, '')}</div>
-                <div style="margin-bottom: 5px;">* Diễn giải cụ thể</div>
-                <table class="p-table-diengiai">
-                `;
+            // Always show every day
+            daysHtml += `
+            <div style="text-align: center; border-top: 1px dashed #000; margin: 15px 0;"></div>
+            <div style="text-align: center; margin-bottom: 10px; font-weight:bold;">${daysName[idx]}<br>${dateStr}</div>
+            <div style="font-weight:bold;">* Kế hoạch</div>
+            <table class="p-table-kehoach">
+                <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
+                <tr>${kehoachCells}</tr>
+            </table>
+            <div style="margin-top: 5px; font-weight: bold;">* Tổng chi dự kiến: ${formatVND(dayTotal).replace(/\s/g, '')}</div>
+            <div style="margin-bottom: 5px; font-weight:bold;">* Diễn giải cụ thể</div>
+            <table class="p-table-diengiai">
+            `;
 
-                catsArr.forEach((cat, cIdx) => {
-                    let catItems = expenseData[day][cat];
-                    if (catItems.length === 1) {
-                        let item = catItems[0];
-                        let title = `${item.nd}${item.dt ? '| ' + item.dt : ''}`;
-                        daysHtml += `<tr>
-                            <td style="width: 40%;">- ${catsName[cIdx]}: ${title}</td>
-                            <td style="width: 15%; text-align:right;">${item.gia} đ</td>
-                            <td style="width: 5%; text-align:right;">${item.sl}</td>
-                            <td style="width: 15%; text-align:right;">${formatVND(item.total)}</td>
-                            <td style="width: 5%; text-align:right; font-size:18px;">☐</td>
-                        </tr>`;
-                    } else if (catItems.length > 1) {
-                        let catTotal = catItems.reduce((s, i) => s + i.total, 0);
-                        daysHtml += `<tr>
-                            <td colspan="5">- ${catsName[cIdx]}: <span style="margin-left: 50px;">${formatVND(catTotal)}</span></td>
-                        </tr>`;
-                        catItems.forEach(item => {
-                            let title = `${item.nd}${item.dt ? '| ' + item.dt : ''}`;
-                            daysHtml += `<tr>
-                                <td style="width: 40%; padding-left: 25px;">+ ${title}</td>
-                                <td style="width: 15%; text-align:right;">${item.gia} đ</td>
-                                <td style="width: 5%; text-align:right;">${item.sl}</td>
-                                <td style="width: 15%; text-align:right;">${formatVND(item.total)}</td>
-                                <td style="width: 5%; text-align:right; font-size:18px;">☐</td>
-                            </tr>`;
-                        });
-                    }
+            catsArr.forEach((cat, cIdx) => {
+                let catItems = expenseData[day][cat];
+                let catTotal = catItems.reduce((s, i) => s + i.total, 0);
+                
+                daysHtml += `<tr>
+                    <td colspan="5" style="text-align:left; font-weight:bold;">- ${catsName[cIdx]}: <span style="margin-left:20px;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</span></td>
+                </tr>`;
+
+                catItems.forEach(item => {
+                    let title = `${item.nd}${item.dt ? ' | ' + item.dt : ''}`;
+                    daysHtml += `<tr>
+                        <td style="width: 40%; padding-left: 25px;">+ ${title}</td>
+                        <td style="width: 15%; text-align:right;">${item.gia} đ</td>
+                        <td style="width: 5%; text-align:right;">${item.sl}</td>
+                        <td style="width: 15%; text-align:right;">${formatVND(item.total)}</td>
+                        <td style="width: 5%; text-align:right; font-size:18px;">☐</td>
+                    </tr>`;
                 });
-                daysHtml += `</table>`;
-            }
+            });
+            daysHtml += `</table>`;
         });
 
         let funds = (allWeeksData[weekKey] && allWeeksData[weekKey].funds) ? allWeeksData[weekKey].funds : [];
         let fundRows = '';
-        let half = Math.ceil(funds.length / 2);
         let totalFactor = 0;
         let totalFundMoney = 0;
 
-        for (let i = 0; i < Math.max(half, 4); i++) {
-            let f1 = funds[i];
-            let f2 = funds[i + half];
-            let rowHtml = `<tr>`;
+        funds.forEach((f, i) => {
+            let factor = parseFloat(f.factor) || 0;
+            totalFactor += factor; 
+            totalFundMoney += factor * 100000;
+            let dayIndex = daysArr.indexOf(f.day);
+            let dayNameStr = dayIndex >= 0 ? daysName[dayIndex] : '';
             
-            if (f1) {
-                let factor = parseFloat(f1.factor) || 0;
-                totalFactor += factor; totalFundMoney += factor * 100000;
-                rowHtml += `<td>${i+1}</td><td>${f1.name}</td><td>${f1.factor || '0'}</td>`;
-            } else {
-                rowHtml += `<td></td><td></td><td></td>`;
-            }
-
-            if (f2) {
-                let factor = parseFloat(f2.factor) || 0;
-                totalFactor += factor; totalFundMoney += factor * 100000;
-                rowHtml += `<td>${i+1+half}</td><td>${f2.name}</td><td>${f2.factor || '0'}</td>`;
-            } else {
-                rowHtml += `<td></td><td></td><td></td>`;
-            }
-            rowHtml += `</tr>`;
-            fundRows += rowHtml;
-        }
+            fundRows += `<tr>
+                <td>${i + 1}</td>
+                <td>${tuNgayObj.getFullYear()}</td>
+                <td>${tuan}</td>
+                <td style="text-align:left;">${f.name || ''}</td>
+                <td style="text-align:left;">${f.target || ''}</td>
+                <td>${f.factor || '0'}</td>
+                <td>${dayNameStr}</td>
+            </tr>`;
+        });
         
         let fundNameNote = ".........................";
         if (ns.dest === 'quy') {
@@ -1882,61 +1884,53 @@
         }
 
         let printContent = `
-            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 10px;">
-                <div>Mẫu số: D01_01/KHCT-DECORD/18012026</div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px;">
+                <div>Mẫu số: D01/TTQLDT-VPKHCT</div>
                 <div>Cập nhật ngày: 15/03/2026</div>
             </div>
 
-            <div class="p-box-heavy">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div>
-                        <div style="font-size: 16px;">MSLT: 13 - ..../F01_01-EXPNPL/18012026</div>
-                        <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-family: 'Libre Barcode 128 Text', cursive; font-size: 38px; line-height: 0.8;">F01-EXPNPL</div>
-                        <div style="font-size: 11px; margin-bottom: 2px;">F01-EXPNPL</div>
-                        <div style="font-family: 'Libre Barcode 128 Text', cursive; font-size: 38px; line-height: 0.8;">F01_01-EXPNPL</div>
-                        <div style="font-size: 11px;">F01_01-EXPNPL</div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 10px;">
-                    Tình trạng:<br>
-                    <div style="padding-left: 50px;">
-                        ☑ Đang sử dụng: từ ngày <span style="display:inline-block; width:100px;">${tuNgayStr}</span> đến ngày <span style="display:inline-block; width:100px;">${denNgayStr}</span><br>
-                        ☐ Đã hết hạn sử dụng: từ ngày <span style="display:inline-block; width:100px;">${outDateStr}</span> trở đi<br>
-                        ☐ Hiện đang lưu trữ tại bìa hồ sơ: từ ngày <span style="display:inline-block; width:100px;">${outDateStr}</span> trở đi<br>
-                        ☐ Đã hủy: ngày hủy: ....../ ....../ 20......., lý do: ....................................................
-                    </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div>
+                    <div style="font-size: 16px; font-weight:bold;">MSLT: ${tuan}-${pVer}</div>
+                    <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
                 </div>
             </div>
 
-            <h2 style="text-align: center; text-transform: uppercase; font-weight: normal; letter-spacing: 2px; font-size: 20px; margin-bottom: 20px;">KẾ HOẠCH CHI TIÊU</h2>
+            <h2 style="text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; font-size: 22px; margin-bottom: 20px;">KẾ HOẠCH CHI TIÊU</h2>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 15px;">
                 <div style="flex: 1;">
-                    Bàn giao tuần trước:<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;+ Số dư: <span style="display:inline-block; width:100px; text-align:right;">${tongSoDu}</span>
+                    <span style="font-weight:bold;">Bàn giao tuần trước:</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Số dư: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold;">${tongSoDu}</span>
                 </div>
-                <div style="flex: 1; text-align: right;">
-                    Tuần: ${tuan}<br>
+                <div style="flex: 1; text-align: right; line-height: 1.5;">
+                    <span style="font-weight:bold;">Tuần: ${tuan}</span><br>
                     Tháng: ${thangNam.replace('Tháng ', '').replace(' / Năm 2026', '').split(' |')[0]}/2026<br>
                     Từ ngày: ${tuNgayStr} đến ngày: ${denNgayStr}<br>
-                    <div style="display: flex; justify-content: flex-end;">
-                        <span style="margin-right: 10px;">Tổng chi tuần dự kiến:</span>
-                        <span style="display:inline-block; width:100px; text-align:right;">${formatVND(tongChiTuan)}</span>
+                    <div style="display: flex; justify-content: flex-end; margin-top:5px;">
+                        <span style="margin-right: 10px; font-weight:bold;">Tổng chi tuần dự kiến:</span>
+                        <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; font-size:16px;">${formatVND(tongChiTuan)}</span>
                     </div>
                 </div>
             </div>
 
             ${daysHtml}
 
-            <div style="border-top: 1px dashed #000; margin-top: 20px; padding-top: 10px; line-height: 1.6; text-align: justify;">
-                Trên đây là bản kế hoạch chi tiêu cho tuần ${tuan}, có hiệu lực từ 00h00 ngày ${tuNgayStr}, hạn sử dụng tới 23h59 ngày ${denNgayStr} sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>
-                Khuyến khích chấp hành chi theo đúng bản kế hoạch này.<br><br>
-                Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán<br><br>
-                Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
+            <div style="line-height: 1.8; text-align: justify; font-size: 14px; margin-top:20px; border-top: 1px solid #000; padding-top: 15px;">
+                <p style="margin-bottom: 10px;">* Kế hoạch chi tiêu tuần <strong>${tuan}</strong> được thiết kế và xây dựng bởi bộ phận Kế hoạch và Tài chánh trực thuộc TTQLDT.<br>
+                Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày <strong>${ngayDuyetStr}</strong>.<br>
+                Mọi vấn đề cần được giải đáp liên hệ trực tiếp tại văn phòng Kế hoạch và Tài chánh.</p>
+                
+                <p style="margin-bottom: 10px;">* Trên đây là bản kế hoạch chi tiêu cho tuần <strong>${tuan}</strong>, có hiệu lực từ 00h00 ngày <strong>${tuNgayStr}</strong>, hạn sử dụng tới 23h59 ngày <strong>${denNgayStr}</strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>
+                Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
+
+                <p style="margin-bottom: 10px;">* Nội các quyết định 
+                ${ns.budap === 'không' ? '☑' : '☐'} không 
+                ${ns.budap === 'cho phép' ? '☑' : '☐'} cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này.</p>
+
+                <p style="margin-bottom: 10px;">* Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán và Phiếu yêu cầu cấp chi phí cho tuần tiếp theo.</p>
+
+                <p style="margin-bottom: 10px;">* Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
                 ${ns.amount === '500,000đ' ? '☑' : '☐'} 500.000đ | 
                 ${ns.amount === '750,000đ' ? '☑' : '☐'} 750.000đ | 
                 ${ns.amount === '1,000,000đ' ? '☑' : '☐'} 1.000.000đ | 
@@ -1945,53 +1939,52 @@
                 ${ns.submit === 'nop' ? '☑' : '☐'} Nộp | 
                 ${ns.submit === 'khong_nop' ? '☑' : '☐'} Không nộp vào 
                 ${ns.dest === 'stk' ? '☑' : '☐'} STK ${ns.dest === 'stk' && ns.stk ? ns.stk : '.........................'} | 
-                ${ns.dest === 'quy' ? '☑' : '☐'} Quỹ ${ns.dest === 'quy' ? fundNameNote : '.........................'} vào thứ 2 tuần kế tiếp
+                ${ns.dest === 'quy' ? '☑' : '☐'} Quỹ ${ns.dest === 'quy' ? fundNameNote : '.........................'} vào thứ 2 tuần kế tiếp.</p>
+
+                <p style="margin-bottom: 10px;">* Một số khuyến nghị cho tuần <strong>${tuan}</strong>:<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy.<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi: <strong>${ns.pctMin || 85} đến ${ns.pctMax || 100}</strong></p>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <div style="text-align: center; font-weight:bold; margin-bottom: 5px;">BẢNG HỆ SỐ NỘP QUỸ TUẦN ${tuan}</div>
+                <table class="p-table-kehoach">
+                    <tr>
+                        <th style="width: 5%;">STT</th>
+                        <th style="width: 8%;">Năm</th>
+                        <th style="width: 8%;">Tuần</th>
+                        <th style="width: 25%;">Tên Quỹ</th>
+                        <th style="width: 25%;">Đối tượng chi</th>
+                        <th style="width: 12%;">Hệ số nộp</th>
+                        <th style="width: 17%;">Thứ sẽ nộp</th>
+                    </tr>
+                    ${fundRows.length > 0 ? fundRows : '<tr><td colspan="7" style="font-style:italic; color:#666;">Chưa có dữ liệu quỹ nộp trong tuần này.</td></tr>'}
+                </table>
+                <div style="text-align: right; font-weight: bold; margin-top: 5px;">
+                    Tổng hệ số: ${totalFactor}<br>
+                    Số tiền phải nộp: ${formatVND(totalFundMoney).replace(/\s/g, '')}
+                </div>
             </div>
 
             <table style="width: 100%; border:none; margin-top: 30px;">
                 <tr>
                     <td style="border:none; text-align:left; width: 50%; vertical-align:top;">
-                        - Nơi lưu:<br>
+                        <span style="font-weight:bold;">- Nơi lưu:</span><br>
                         &nbsp;&nbsp;&nbsp;&nbsp;+ Phòng hồ sơ<br>
                         &nbsp;&nbsp;&nbsp;&nbsp;+ VT
                     </td>
                     <td style="border:none; text-align:center; width: 50%; vertical-align:top;">
                         Saigon, ngày ${now.getDate()} tháng ${now.getMonth()+1} năm ${now.getFullYear()}<br>
-                        Giám đốc<br><br><br><br>
+                        <span style="font-weight:bold;">Giám đốc</span><br><br><br><br>
                     </td>
                 </tr>
             </table>
-
-            <div class="p-box-heavy" style="margin-top: 20px;">
-                Kế hoạch chi tiêu tuần ${tuan} được thiết kế và xây dựng bởi bộ phận Kế hoạch và Tài chánh trực thuộc TTQLDT<br>
-                Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày ${ngayDuyetStr}<br>
-                Mọi vấn đề cần được giải đáp liên hệ trực tiếp tại văn phòng Kế hoạch và Tài chánh<br>
-                Nội các quyết định ${ns.budap === 'không' ? '☑' : '☐'} không | ${ns.budap === 'cho phép' ? '☑' : '☐'} cho phép sử dụng nguồn tiền dư từ tuần trước để bù đắp chi phí cho tuần này<br>
-                Một số khuyến nghị cho tuần ${tuan}:<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi có thể lấy đến 2 chữ số thập phân sau dấu phẩy<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;+ Phần trăm được phép chi: ${ns.pctMin || 85} đến ${ns.pctMax || 100}
-            </div>
-
-            <div class="p-box-heavy" style="margin-top: 10px;">
-                <div style="text-align: center; border-bottom: 1px dashed #000; margin-bottom: 10px; padding-bottom: 5px;">Hệ số nộp quỹ tuần ${tuan}</div>
-                <table class="p-fund-table">
-                    <tr>
-                        <th style="width:10%;">STT</th><th style="width:25%;">Loại quỹ</th><th style="width:15%;">Hệ số</th>
-                        <th style="width:10%;">STT</th><th style="width:25%;">Loại quỹ</th><th style="width:15%;">Hệ số</th>
-                    </tr>
-                    ${fundRows}
-                </table>
-                <div style="text-align: center; border-top: 1px solid #000; margin-top: 10px; padding-top: 5px;">
-                    Tổng hệ số tuần ${tuan}: ${totalFactor}<br>
-                    Số tiền phải nộp: ${formatVND(totalFundMoney).replace(/\s/g, '')}
-                </div>
-            </div>
 
             <div style="text-align: center; margin-top: 20px;">
                 Mã đối soát : <span style="margin-left: 20px; font-family: monospace; letter-spacing: 2px;">${asciiCode}</span>
             </div>
             ${isReprint ? `<div style="text-align: center; font-weight: bold; font-size: 16px; margin-top: 5px;">BẢN SAO</div><div style="text-align:center; font-size:11px; margin-top:3px;">Thời gian in lại: ${new Date().toLocaleString('vi-VN')}</div>` : ''}
-            <h3 style="text-align: center; text-transform: uppercase; font-size: 16px; margin-top: 10px;">Phiếu kiểm toán bắt buộc phải được lưu trữ không hủy bỏ dưới mọi hình thức</h3>
+            <h3 style="text-align: center; text-transform: uppercase; font-size: 14px; margin-top: 10px;">Phiếu kiểm toán bắt buộc phải được lưu trữ không hủy bỏ dưới mọi hình thức</h3>
         `;
 
         printArea.innerHTML = printContent;
