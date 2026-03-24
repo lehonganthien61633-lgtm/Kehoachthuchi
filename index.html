@@ -322,7 +322,7 @@
             font-size: 15px;
         }
         
-        /* Input chỉ đọc khi chọn mẫu */
+        /* Input chỉ đọc */
         .readonly-input {
             background-color: #e9ecef !important;
             cursor: not-allowed;
@@ -594,14 +594,12 @@
     /* ================= FIREBASE LOGIC ================= */
     let saveTimeout;
     
-    // Đẩy thông báo trạng thái
     function setStatus(msg, color) {
         const st = document.getElementById('save-status');
         st.textContent = msg;
         st.style.color = color;
     }
 
-    // Tải dữ liệu từ DB
     async function loadFromFirebase() {
         try {
             let res = await fetch(DB_URL);
@@ -626,10 +624,9 @@
         }
     }
 
-    // Lưu dữ liệu lên DB
     async function saveToFirebase() {
         setStatus("(Đang lưu...)", "#f39c12");
-        saveCurrentWeekLocally(); // Gói dữ liệu tuần hiện tại vào tổng trước khi lưu
+        saveCurrentWeekLocally(); 
         let payload = {
             allWeeksData: allWeeksData,
             sampleExpenses: sampleExpenses,
@@ -652,7 +649,6 @@
         }
     }
 
-    // Kích hoạt lưu tự động sau khi nhập xong hoặc bấm phím
     function scheduleSave() {
         setStatus("(Chờ lưu...)", "#f39c12");
         clearTimeout(saveTimeout);
@@ -785,8 +781,20 @@
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
         return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
     }
+    // Định dạng Tuần thêm số 0 đằng trước để đảm bảo sắp xếp chuỗi JSON chuẩn xác (VD: 2026-02 thay vì 2026-2)
     function getWeekKey(date) {
-        return date.getFullYear() + '-' + getISOWeekNumber(date);
+        let w = getISOWeekNumber(date);
+        return date.getFullYear() + '-' + String(w).padStart(2, '0');
+    }
+
+    // Logic Lấy bảng quỹ của tuần gần nhất
+    function getLatestFunds() {
+        let keys = Object.keys(allWeeksData).sort();
+        if (keys.length > 0) {
+            let latestKey = keys[keys.length - 1];
+            return allWeeksData[latestKey].funds || [];
+        }
+        return [];
     }
 
     // Logic Quản lý Dữ liệu các tuần
@@ -822,23 +830,20 @@
             expenseData = JSON.parse(JSON.stringify(allWeeksData[newKey].expenses));
             renderFundTable(allWeeksData[newKey].funds, targetMonday);
         } else {
-            // Chưa có dữ liệu: Tạo rỗng và kế thừa từ Bảng quỹ hiện hành
+            // Chưa có dữ liệu: Tạo rỗng và kế thừa từ Bảng quỹ của tuần gần nhất
             daysArr.forEach(d => {
                 expenseData[d] = {};
                 catsArr.forEach(c => expenseData[d][c] = []);
             });
             
-            // Chuyển tiếp tên/đối tượng và NGÀY từ bảng quỹ cũ, làm rỗng Hệ số
-            let carriedFunds = [];
-            document.querySelectorAll('#fund-table-body tr').forEach(row => {
-                carriedFunds.push({
-                    id: 'fund_' + Date.now() + Math.random(),
-                    name: row.querySelector('.fund-name').value.trim(),
-                    target: row.querySelector('.fund-target').value.trim(),
-                    factor: '', // Reset làm rỗng
-                    day: row.querySelector('.fund-day').value // Lưu và mang theo thứ (ngày nộp)
-                });
-            });
+            let lastFunds = getLatestFunds();
+            let carriedFunds = lastFunds.map((f, idx) => ({
+                id: 'fund_' + Date.now() + '_' + idx,
+                name: f.name,
+                target: f.target,
+                factor: '', // Xóa hệ số
+                day: f.day  // Giữ nguyên ngày nộp
+            }));
             renderFundTable(carriedFunds, targetMonday);
         }
 
@@ -885,15 +890,22 @@
     }
     function closeExpenseModal() { document.getElementById('modal-expense').style.display = 'none'; }
 
-    // Đã nâng cấp để lưu trạng thái Readonly từng trường để giá tiền trống có thể mở khóa
-    function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0, roNd: false, roDt: false, roGia: false }) {
+    // Bảo toàn trạng thái Quỹ (isFund và fundUniqueId) thông qua HTML Dataset
+    function addModalRow(item = {}) {
+        let defaultItem = { nd: '', dt: '', gia: '', sl: 1, total: 0, roNd: false, roDt: false, roGia: false, isFund: false, fundUniqueId: null };
+        item = { ...defaultItem, ...item };
+
         let tbody = document.getElementById('modal-expense-tbody');
         let tr = document.createElement('tr');
         
-        // Quản lý trạng thái khóa nếu là dữ liệu từng lưu hoặc truyền mới vào
         let readOnlyNd = item.roNd !== undefined ? item.roNd : item.isSample;
         let readOnlyDt = item.roDt !== undefined ? item.roDt : item.isSample;
         let readOnlyGia = item.roGia !== undefined ? item.roGia : item.isSample;
+
+        // Nếu là chi phí xuất phát từ Bảng Quỹ -> Khóa mọi thao tác sửa để bảo vệ liên kết
+        if (item.isFund) {
+            readOnlyNd = true; readOnlyDt = true; readOnlyGia = true;
+        }
 
         let attrNd = readOnlyNd ? 'readonly' : '';
         let clsNd = readOnlyNd ? 'readonly-input' : '';
@@ -904,19 +916,29 @@
         let attrGia = readOnlyGia ? 'readonly' : '';
         let clsGia = readOnlyGia ? 'readonly-input' : '';
 
+        let btnSampleHtml = item.isFund ? '' : `<button type="button" class="btn-add" style="width:20px;height:20px;font-size:16px;line-height:18px;margin:0;" onclick="openSampleForThisRow(this)">+</button>`;
+        let btnDeleteHtml = item.isFund ? '' : `<button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button>`;
+        let slReadonly = item.isFund ? 'readonly class="inp-sl readonly-input"' : 'min="1" class="inp-sl"';
+
         tr.innerHTML = `
             <td class="stt-cell"></td>
-            <td><button type="button" class="btn-add" style="width:20px;height:20px;font-size:16px;line-height:18px;margin:0;" onclick="openSampleForThisRow(this)">+</button></td>
+            <td>${btnSampleHtml}</td>
             <td><input type="text" class="inp-nd ${clsNd}" value="${item.nd}" placeholder="Nội dung" ${attrNd}></td>
             <td><input type="text" class="inp-dt ${clsDt}" value="${item.dt}" placeholder="Đối tượng" ${attrDt}></td>
             <td><input type="text" class="inp-gia ${clsGia}" value="${item.gia}" placeholder="Bắt buộc" ${attrGia}></td>
-            <td><input type="number" class="inp-sl" value="${item.sl}" min="1"></td>
+            <td><input type="number" ${slReadonly} value="${item.sl}"></td>
             <td class="cell-thanh-tien" style="font-weight:bold;">${formatVND(item.total)}</td>
-            <td><button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button></td>
+            <td>${btnDeleteHtml}</td>
         `;
+        
+        tr.dataset.isFund = item.isFund || false;
+        if (item.fundUniqueId) tr.dataset.fundId = item.fundUniqueId;
+
         tbody.appendChild(tr);
-        tr.querySelector('.inp-gia').addEventListener('input', function() { dinhDangDauPhay(this); calcRowTotal(tr); });
-        tr.querySelector('.inp-sl').addEventListener('input', function() { calcRowTotal(tr); });
+        if (!item.isFund) {
+            tr.querySelector('.inp-gia').addEventListener('input', function() { dinhDangDauPhay(this); calcRowTotal(tr); });
+            tr.querySelector('.inp-sl').addEventListener('input', function() { calcRowTotal(tr); });
+        }
         tr.setAttribute('data-total', item.total);
         updateModalSTT();
     }
@@ -1038,10 +1060,12 @@
             let gia = parseFloat(giaStr.replace(/,/g, '')) || 0; 
             let sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
             
-            // Lấy trạng thái khóa của từng ô để lưu lại chính xác
+            // Lấy trạng thái khóa và ID quỹ của từng ô để lưu lại chính xác, không bị đứt liên kết
             let roNd = row.querySelector('.inp-nd').hasAttribute('readonly');
             let roDt = row.querySelector('.inp-dt').hasAttribute('readonly');
             let roGia = row.querySelector('.inp-gia').hasAttribute('readonly');
+            let isFund = row.dataset.isFund === 'true';
+            let fundId = row.dataset.fundId;
             
             if (nd !== '' && (gia <= 0 || sl <= 0)) hasError = true;
             if (nd !== '' || row.querySelector('.inp-dt').value.trim() !== '' || giaStr !== '') {
@@ -1054,7 +1078,9 @@
                         total: gia * sl, 
                         roNd, 
                         roDt, 
-                        roGia 
+                        roGia,
+                        isFund: isFund,
+                        fundUniqueId: fundId
                     });
                 }
             }
@@ -1177,7 +1203,10 @@
                 sl: 1, 
                 total: money, 
                 isFund: true, 
-                fundUniqueId: id 
+                fundUniqueId: id,
+                roNd: true,
+                roDt: true,
+                roGia: true
             });
             renderMainCategory(day, 'khac'); 
             updateDayTotals(day);
