@@ -627,11 +627,10 @@
     }
 
     function showDay(dayId) {
-        switchModule('module-chi-tieu-tuan');
-        document.querySelectorAll('.day-section').forEach(sec => {
-            sec.style.display = (sec.id === 'section-' + dayId) ? 'block' : 'none';
-        });
-    }
+    switchModule('module-chi-tieu-tuan');
+    // Đã xóa vòng lặp ẩn các thứ, đổi thành cuộn mượt đến thứ được chọn
+    document.getElementById('section-' + dayId).scrollIntoView({ behavior: 'smooth' });
+}
 
     function formatVND(soTien) { return soTien.toLocaleString('vi-VN') + ' đ'; }
     function dinhDangDauPhay(input) {
