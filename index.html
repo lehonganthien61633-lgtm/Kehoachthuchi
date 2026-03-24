@@ -432,16 +432,25 @@
                 top: 0; 
                 width: 100%; 
                 font-family: "Times New Roman", Times, serif; 
-                font-size: 14px; 
+                font-size: 14.5px; 
                 color: #000; 
                 background: #fff; 
             }
-            .p-table-kehoach { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-            .p-table-kehoach th, .p-table-kehoach td { border: 1px solid #000; padding: 6px; text-align: center; }
+            .print-container {
+                padding: 0 12mm; /* Căn lề dời vô 1 chút cho đẹp */
+            }
+            
+            /* Bảng Kế hoạch không kẻ viền cứng, chỉ viền đứt nét trên/dưới */
+            .p-table-kehoach { width: 100%; border-collapse: collapse; margin: 10px 0; border-top: 1.5px dashed #000; border-bottom: 1.5px dashed #000; }
+            .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 8px 4px; text-align: center; }
+            .p-table-kehoach th { border-bottom: 1px dashed #000; }
+            
             .p-table-diengiai { width: 100%; border-collapse: collapse; }
             .p-table-diengiai td { padding: 4px 5px; vertical-align: top; border: none; }
+            
             .p-fund-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+            .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 8px; text-align: center; }
+            
             @page { size: A4; margin: 15mm; }
         }
     </style>
@@ -1696,7 +1705,7 @@
                 <td>${index + 1}</td>
                 <td style="font-weight: bold;">${hist.timeStr}</td>
                 <td>Tuần ${hist.week}</td>
-                <td>${hist.week}-${hist.pVer || 0}</td>
+                <td>${hist.week}-${hist.pVer || 0}/D01/TTQLDT-VPKHCT</td>
                 <td style="font-family: monospace; font-size: 16px;">${hist.asciiCode}</td>
                 <td>
                     <button class="btn-sample" style="margin: 0; padding: 5px 10px;" onclick="reprint('${hist.dateStr}', '${hist.asciiCode}', '${hist.timeStr}', ${hist.pVer || 0})">In Bản Sao</button>
@@ -1812,21 +1821,25 @@
             catsArr.forEach(cat => {
                 let catTotal = expenseData[day][cat].reduce((s, i) => s + i.total, 0);
                 dayTotal += catTotal;
-                kehoachCells += `<td style="text-align:right;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</td>`;
+                kehoachCells += `<td>${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</td>`;
             });
             tongChiTuan += dayTotal;
 
             // Always show every day
             daysHtml += `
-            <div style="text-align: center; border-top: 1px dashed #000; margin: 15px 0;"></div>
-            <div style="text-align: center; margin-bottom: 10px; font-weight:bold;">${daysName[idx]}<br>${dateStr}</div>
-            <div style="font-weight:bold;">* Kế hoạch</div>
+            <div style="text-align: center; border-top: 1.5px dashed #000; margin: 20px 0;"></div>
+            <div style="text-align: center; margin-bottom: 10px; font-weight:bold; font-size:16px;">${daysName[idx]} - ${dateStr}</div>
+            <div style="font-weight:bold; margin-bottom:5px;">* Kế hoạch</div>
             <table class="p-table-kehoach">
-                <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
-                <tr>${kehoachCells}</tr>
+                <thead>
+                    <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
+                </thead>
+                <tbody>
+                    <tr>${kehoachCells}</tr>
+                </tbody>
             </table>
             <div style="margin-top: 5px; font-weight: bold;">* Tổng chi dự kiến: ${formatVND(dayTotal).replace(/\s/g, '')}</div>
-            <div style="margin-bottom: 5px; font-weight:bold;">* Diễn giải cụ thể</div>
+            <div style="margin-bottom: 5px; font-weight:bold; margin-top: 10px;">* Diễn giải cụ thể</div>
             <table class="p-table-diengiai">
             `;
 
@@ -1884,6 +1897,7 @@
         }
 
         let printContent = `
+        <div class="print-container">
             <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px;">
                 <div>Mẫu số: D01/TTQLDT-VPKHCT</div>
                 <div>Cập nhật ngày: 15/03/2026</div>
@@ -1891,12 +1905,12 @@
 
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                 <div>
-                    <div style="font-size: 16px; font-weight:bold;">MSLT: ${tuan}-${pVer}</div>
+                    <div style="font-size: 16px; font-weight:bold;">MSLT: ${tuan}-${pVer}/D01/TTQLDT-VPKHCT</div>
                     <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
                 </div>
             </div>
 
-            <h2 style="text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; font-size: 22px; margin-bottom: 20px;">KẾ HOẠCH CHI TIÊU</h2>
+            <h2 style="text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; font-size: 24px; margin-bottom: 25px;">KẾ HOẠCH CHI TIÊU</h2>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 15px;">
                 <div style="flex: 1;">
@@ -1916,7 +1930,7 @@
 
             ${daysHtml}
 
-            <div style="line-height: 1.8; text-align: justify; font-size: 14px; margin-top:20px; border-top: 1px solid #000; padding-top: 15px;">
+            <div style="line-height: 1.8; text-align: justify; font-size: 14px; margin-top:25px; border-top: 1.5px solid #000; padding-top: 15px;">
                 <p style="margin-bottom: 10px;">* Kế hoạch chi tiêu tuần <strong>${tuan}</strong> được thiết kế và xây dựng bởi bộ phận Kế hoạch và Tài chánh trực thuộc TTQLDT.<br>
                 Đã trình lên Giám đốc TTQLDT kiểm tra và phê duyệt vào ngày <strong>${ngayDuyetStr}</strong>.<br>
                 Mọi vấn đề cần được giải đáp liên hệ trực tiếp tại văn phòng Kế hoạch và Tài chánh.</p>
@@ -1948,7 +1962,7 @@
 
             <div style="margin-top: 15px;">
                 <div style="text-align: center; font-weight:bold; margin-bottom: 5px;">BẢNG HỆ SỐ NỘP QUỸ TUẦN ${tuan}</div>
-                <table class="p-table-kehoach">
+                <table class="p-fund-table">
                     <tr>
                         <th style="width: 5%;">STT</th>
                         <th style="width: 8%;">Năm</th>
@@ -1980,11 +1994,12 @@
                 </tr>
             </table>
 
-            <div style="text-align: center; margin-top: 20px;">
-                Mã đối soát : <span style="margin-left: 20px; font-family: monospace; letter-spacing: 2px;">${asciiCode}</span>
+            <div style="text-align: center; margin-top: 30px;">
+                Mã đối soát: <span style="margin-left: 20px; font-family: monospace; letter-spacing: 2px;">${asciiCode}</span>
             </div>
             ${isReprint ? `<div style="text-align: center; font-weight: bold; font-size: 16px; margin-top: 5px;">BẢN SAO</div><div style="text-align:center; font-size:11px; margin-top:3px;">Thời gian in lại: ${new Date().toLocaleString('vi-VN')}</div>` : ''}
             <h3 style="text-align: center; text-transform: uppercase; font-size: 14px; margin-top: 10px;">Phiếu kiểm toán bắt buộc phải được lưu trữ không hủy bỏ dưới mọi hình thức</h3>
+        </div>
         `;
 
         printArea.innerHTML = printContent;
