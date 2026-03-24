@@ -828,7 +828,7 @@
                 catsArr.forEach(c => expenseData[d][c] = []);
             });
             
-            // Chuyển tiếp tên/đối tượng từ bảng quỹ cũ, làm rỗng Hệ số
+            // Chuyển tiếp tên/đối tượng và NGÀY từ bảng quỹ cũ, làm rỗng Hệ số
             let carriedFunds = [];
             document.querySelectorAll('#fund-table-body tr').forEach(row => {
                 carriedFunds.push({
@@ -836,7 +836,7 @@
                     name: row.querySelector('.fund-name').value.trim(),
                     target: row.querySelector('.fund-target').value.trim(),
                     factor: '', // Reset làm rỗng
-                    day: row.querySelector('.fund-day').value
+                    day: row.querySelector('.fund-day').value // Lưu và mang theo thứ (ngày nộp)
                 });
             });
             renderFundTable(carriedFunds, targetMonday);
@@ -885,19 +885,31 @@
     }
     function closeExpenseModal() { document.getElementById('modal-expense').style.display = 'none'; }
 
-    function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0, isSample: false }) {
+    // Đã nâng cấp để lưu trạng thái Readonly từng trường để giá tiền trống có thể mở khóa
+    function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0, roNd: false, roDt: false, roGia: false }) {
         let tbody = document.getElementById('modal-expense-tbody');
         let tr = document.createElement('tr');
         
-        let roAttr = item.isSample ? 'readonly' : '';
-        let inputClass = item.isSample ? 'readonly-input' : '';
+        // Quản lý trạng thái khóa nếu là dữ liệu từng lưu hoặc truyền mới vào
+        let readOnlyNd = item.roNd !== undefined ? item.roNd : item.isSample;
+        let readOnlyDt = item.roDt !== undefined ? item.roDt : item.isSample;
+        let readOnlyGia = item.roGia !== undefined ? item.roGia : item.isSample;
+
+        let attrNd = readOnlyNd ? 'readonly' : '';
+        let clsNd = readOnlyNd ? 'readonly-input' : '';
+
+        let attrDt = readOnlyDt ? 'readonly' : '';
+        let clsDt = readOnlyDt ? 'readonly-input' : '';
+
+        let attrGia = readOnlyGia ? 'readonly' : '';
+        let clsGia = readOnlyGia ? 'readonly-input' : '';
 
         tr.innerHTML = `
             <td class="stt-cell"></td>
             <td><button type="button" class="btn-add" style="width:20px;height:20px;font-size:16px;line-height:18px;margin:0;" onclick="openSampleForThisRow(this)">+</button></td>
-            <td><input type="text" class="inp-nd ${inputClass}" value="${item.nd}" placeholder="Nội dung" ${roAttr}></td>
-            <td><input type="text" class="inp-dt ${inputClass}" value="${item.dt}" placeholder="Đối tượng" ${roAttr}></td>
-            <td><input type="text" class="inp-gia ${inputClass}" value="${item.gia}" placeholder="Bắt buộc" ${roAttr}></td>
+            <td><input type="text" class="inp-nd ${clsNd}" value="${item.nd}" placeholder="Nội dung" ${attrNd}></td>
+            <td><input type="text" class="inp-dt ${clsDt}" value="${item.dt}" placeholder="Đối tượng" ${attrDt}></td>
+            <td><input type="text" class="inp-gia ${clsGia}" value="${item.gia}" placeholder="Bắt buộc" ${attrGia}></td>
             <td><input type="number" class="inp-sl" value="${item.sl}" min="1"></td>
             <td class="cell-thanh-tien" style="font-weight:bold;">${formatVND(item.total)}</td>
             <td><button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button></td>
@@ -946,6 +958,8 @@
     
     function applySampleToRow(index) {
         let item = sampleExpenses[index];
+        let isGiaEmpty = (!item.gia || item.gia.trim() === ''); // Kiểm tra nếu ô giá mẫu trống
+
         if (targetRowForSample) {
             let r = targetRowForSample;
             r.querySelector('.inp-nd').value = item.nd;
@@ -957,14 +971,30 @@
             r.querySelector('.inp-dt').classList.add('readonly-input');
 
             r.querySelector('.inp-gia').value = item.gia;
-            r.querySelector('.inp-gia').setAttribute('readonly', true);
-            r.querySelector('.inp-gia').classList.add('readonly-input');
+            
+            // Xử lý logic Mở/Khóa trường giá
+            if (!isGiaEmpty) {
+                r.querySelector('.inp-gia').setAttribute('readonly', true);
+                r.querySelector('.inp-gia').classList.add('readonly-input');
+            } else {
+                r.querySelector('.inp-gia').removeAttribute('readonly');
+                r.querySelector('.inp-gia').classList.remove('readonly-input');
+            }
 
             r.querySelector('.inp-sl').value = 1;
             calcRowTotal(r);
             targetRowForSample = null;
         } else {
-            addModalRow({ nd: item.nd, dt: item.dt, gia: item.gia, sl: 1, total: parseFloat(item.gia.replace(/,/g, '')) || 0, isSample: true });
+            addModalRow({ 
+                nd: item.nd, 
+                dt: item.dt, 
+                gia: item.gia, 
+                sl: 1, 
+                total: parseFloat(item.gia.replace(/,/g, '')) || 0, 
+                roNd: true, 
+                roDt: true, 
+                roGia: !isGiaEmpty // Nếu trống -> false (mở), Nếu có giá -> true (khóa)
+            });
         }
         closeSampleSelectModal();
     }
@@ -1003,16 +1033,30 @@
     document.getElementById('btn-save-expense').addEventListener('click', function() {
         let newData = [], hasError = false;
         document.querySelectorAll('#modal-expense-tbody tr').forEach(row => {
-            let inpNd = row.querySelector('.inp-nd');
-            let nd = inpNd.value.trim();
-            let isSample = inpNd.hasAttribute('readonly');
+            let nd = row.querySelector('.inp-nd').value.trim();
             let giaStr = row.querySelector('.inp-gia').value.trim(); 
             let gia = parseFloat(giaStr.replace(/,/g, '')) || 0; 
             let sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
             
+            // Lấy trạng thái khóa của từng ô để lưu lại chính xác
+            let roNd = row.querySelector('.inp-nd').hasAttribute('readonly');
+            let roDt = row.querySelector('.inp-dt').hasAttribute('readonly');
+            let roGia = row.querySelector('.inp-gia').hasAttribute('readonly');
+            
             if (nd !== '' && (gia <= 0 || sl <= 0)) hasError = true;
             if (nd !== '' || row.querySelector('.inp-dt').value.trim() !== '' || giaStr !== '') {
-                if (gia > 0 && sl > 0) newData.push({ nd, dt: row.querySelector('.inp-dt').value.trim(), gia: giaStr, sl, total: gia * sl, isSample });
+                if (gia > 0 && sl > 0) {
+                    newData.push({ 
+                        nd, 
+                        dt: row.querySelector('.inp-dt').value.trim(), 
+                        gia: giaStr, 
+                        sl, 
+                        total: gia * sl, 
+                        roNd, 
+                        roDt, 
+                        roGia 
+                    });
+                }
             }
         });
         if (hasError) { alert("Giá và SL phải > 0!"); return; }
@@ -1111,12 +1155,11 @@
         const id = tr.getAttribute('data-fund-id');
         const name = tr.querySelector('.fund-name').value.trim();
         const target = tr.querySelector('.fund-target').value.trim();
-        const factorStr = tr.querySelector('.fund-factor').value.trim(); // Kiểm tra xem chuỗi có rỗng không
+        const factorStr = tr.querySelector('.fund-factor').value.trim(); 
         const day = tr.querySelector('.fund-day').value;
         
-        // Khi factorStr rỗng => không thực thi
         let factor = parseFloat(factorStr);
-        if (isNaN(factor)) factor = 0; // Để nếu điền "0" thì hiểu là số 0
+        if (isNaN(factor)) factor = 0; 
 
         // Reset dữ liệu cũ trong chi tiêu
         daysArr.forEach(d => {
