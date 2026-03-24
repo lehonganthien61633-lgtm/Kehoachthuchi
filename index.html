@@ -327,6 +327,7 @@
             background-color: #e9ecef !important;
             cursor: not-allowed;
             color: #555;
+            border: 1px dashed #ccc !important;
         }
 
         .btn-add-row {
@@ -393,6 +394,14 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
+
+        /* Header báo trạng thái save Firebase */
+        #save-status {
+            font-size: 14px;
+            color: #f39c12;
+            margin-left: 15px;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
@@ -411,7 +420,7 @@
             <a onclick="switchModule('module-site-2')">Bảng Hệ Số Nộp Quỹ</a>
         </div>
     </div>
-    <h3 style="margin: 0; font-weight: bold; font-family: 'Times New Roman', Times, serif; letter-spacing: 1px;">KẾ HOẠCH CHI TIÊU</h3>
+    <h3 style="margin: 0; font-weight: bold; font-family: 'Times New Roman', Times, serif; letter-spacing: 1px;">KẾ HOẠCH CHI TIÊU <span id="save-status">Đang tải dữ liệu...</span></h3>
 </div>
 
 <div class="container">
@@ -517,15 +526,15 @@
             </tbody>
         </table>
         <button type="button" class="btn-add-row" onclick="addModalRow()">+ Thêm dòng</button>
-        <button type="button" class="btn-sample" onclick="targetRowForSample=null; openSampleModal()">Thêm chi tiêu mẫu</button>
+        <button type="button" class="btn-sample" onclick="targetRowForSample=null; openSampleModal()">Chỉnh sửa mẫu gốc</button>
         <button id="btn-save-expense" class="btn-save">Hoàn thành</button>
     </div>
 </div>
 
-<div id="modal-sample" class="modal" style="z-index: 30;">
+<div id="modal-select-sample" class="modal" style="z-index: 35;">
     <div class="modal-content">
-        <span class="close" onclick="closeSampleModal()">&times;</span>
-        <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Chi Tiêu Mẫu</h2>
+        <span class="close" onclick="closeSampleSelectModal()">&times;</span>
+        <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Chọn Chi Tiêu Mẫu</h2>
         <table class="modal-table">
             <thead>
                 <tr>
@@ -534,6 +543,26 @@
                     <th style="width: 30%;">Đối tượng chi</th>
                     <th style="width: 20%;">Giá tiền (VNĐ)</th>
                     <th style="width: 15%;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="modal-select-sample-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="modal-sample" class="modal" style="z-index: 40;">
+    <div class="modal-content">
+        <span class="close" onclick="closeSampleModal()">&times;</span>
+        <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Quản Lý Chi Tiêu Mẫu</h2>
+        <table class="modal-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">STT</th>
+                    <th style="width: 35%;">Nội dung chi</th>
+                    <th style="width: 35%;">Đối tượng chi</th>
+                    <th style="width: 20%;">Giá tiền (VNĐ)</th>
+                    <th style="width: 5%;">Xóa</th>
                 </tr>
             </thead>
             <tbody id="modal-sample-tbody">
@@ -545,12 +574,15 @@
 </div>
 
 <script>
+    // URL FIREBASE (Thay đổi đường dẫn lưu trữ vào nhánh appData.json)
+    const DB_URL = "https://kehoachthuchi-b923b-default-rtdb.asia-southeast1.firebasedatabase.app/appData.json";
+
     const daysArr = ['thu-2', 'thu-3', 'thu-4', 'thu-5', 'thu-6', 'thu-7', 'chua-nhat'];
     const daysName = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chúa nhật'];
     const catsArr = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
     const catsName = ['Ăn sáng', 'Ăn trưa', 'Ăn tối', 'Di chuyển', 'Tiết kiệm', 'Khác'];
     
-    // Quản lý dữ liệu theo tuần
+    // Quản lý dữ liệu tổng
     let allWeeksData = {};
     let currentWeekKey = '';
     let expenseData = {};
@@ -558,6 +590,75 @@
     let currentDay = '';
     let currentCat = '';
     let targetRowForSample = null; // Quản lý dòng chi tiêu đang chọn mẫu
+
+    /* ================= FIREBASE LOGIC ================= */
+    let saveTimeout;
+    
+    // Đẩy thông báo trạng thái
+    function setStatus(msg, color) {
+        const st = document.getElementById('save-status');
+        st.textContent = msg;
+        st.style.color = color;
+    }
+
+    // Tải dữ liệu từ DB
+    async function loadFromFirebase() {
+        try {
+            let res = await fetch(DB_URL);
+            if (res.ok) {
+                let data = await res.json();
+                if (data) {
+                    if (data.allWeeksData) allWeeksData = data.allWeeksData;
+                    if (data.sampleExpenses) sampleExpenses = data.sampleExpenses;
+                    if (data.banGiao) {
+                        document.getElementById('input-tien-mat').value = data.banGiao.tienMat || 0;
+                        document.getElementById('input-ngan-hang').value = data.banGiao.nganHang || 0;
+                        tinhTongBanGiao();
+                    }
+                }
+                setStatus("(Dữ liệu đã đồng bộ)", "#2ecc71");
+            } else {
+                setStatus("(Tải dữ liệu thất bại)", "#e74c3c");
+            }
+        } catch(e) { 
+            console.error("Firebase load error", e); 
+            setStatus("(Lỗi kết nối)", "#e74c3c");
+        }
+    }
+
+    // Lưu dữ liệu lên DB
+    async function saveToFirebase() {
+        setStatus("(Đang lưu...)", "#f39c12");
+        saveCurrentWeekLocally(); // Gói dữ liệu tuần hiện tại vào tổng trước khi lưu
+        let payload = {
+            allWeeksData: allWeeksData,
+            sampleExpenses: sampleExpenses,
+            banGiao: {
+                tienMat: document.getElementById('input-tien-mat').value,
+                nganHang: document.getElementById('input-ngan-hang').value
+            }
+        };
+        try {
+            let res = await fetch(DB_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) setStatus("(Đã lưu)", "#2ecc71");
+            else setStatus("(Lưu thất bại)", "#e74c3c");
+        } catch(e) { 
+            console.error("Firebase save error", e); 
+            setStatus("(Lỗi lưu dữ liệu)", "#e74c3c");
+        }
+    }
+
+    // Kích hoạt lưu tự động sau khi nhập xong hoặc bấm phím
+    function scheduleSave() {
+        setStatus("(Chờ lưu...)", "#f39c12");
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveToFirebase, 1500);
+    }
+    /* =================================================== */
 
     function renderWeekUI() {
         let container = document.getElementById('tuan-container');
@@ -657,8 +758,8 @@
         const nh = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
         document.getElementById("hien-thi-tong-ban-giao").textContent = formatVND(tm + nh);
     }
-    inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
-    inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); });
+    inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
+    inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
 
     const inputTuNgay = document.getElementById("input-tu-ngay");
     const inputTuan = document.getElementById("input-tuan");
@@ -689,7 +790,7 @@
     }
 
     // Logic Quản lý Dữ liệu các tuần
-    function saveCurrentWeek() {
+    function saveCurrentWeekLocally() {
         if (!currentWeekKey) return;
         let funds = [];
         document.querySelectorAll('#fund-table-body tr').forEach(row => {
@@ -710,31 +811,31 @@
     function loadWeek(targetMonday) {
         let newKey = getWeekKey(targetMonday);
         if (currentWeekKey && currentWeekKey !== newKey) {
-            saveCurrentWeek();
+            saveCurrentWeekLocally();
         }
 
         currentWeekKey = newKey;
         updateTimeData(targetMonday);
 
         if (allWeeksData[newKey]) {
-            // Tải dữ liệu cũ
+            // Đã có dữ liệu thì load lại
             expenseData = JSON.parse(JSON.stringify(allWeeksData[newKey].expenses));
             renderFundTable(allWeeksData[newKey].funds, targetMonday);
         } else {
-            // Khởi tạo expense rỗng
+            // Chưa có dữ liệu: Tạo rỗng và kế thừa từ Bảng quỹ hiện hành
             daysArr.forEach(d => {
                 expenseData[d] = {};
                 catsArr.forEach(c => expenseData[d][c] = []);
             });
             
-            // Kế thừa danh sách quỹ nhưng reset factor
+            // Chuyển tiếp tên/đối tượng từ bảng quỹ cũ, làm rỗng Hệ số
             let carriedFunds = [];
             document.querySelectorAll('#fund-table-body tr').forEach(row => {
                 carriedFunds.push({
-                    id: row.getAttribute('data-fund-id'),
+                    id: 'fund_' + Date.now() + Math.random(),
                     name: row.querySelector('.fund-name').value.trim(),
                     target: row.querySelector('.fund-target').value.trim(),
-                    factor: '', // Xóa hệ số
+                    factor: '', // Reset làm rỗng
                     day: row.querySelector('.fund-day').value
                 });
             });
@@ -745,21 +846,8 @@
             catsArr.forEach(c => renderMainCategory(d, c));
             updateDayTotals(d);
         });
-    }
-
-    function initTimeModule() {
-        const currentMonday = getMonday(getGMT7Date());
-        let targetMonday = new Date(currentMonday);
-        targetMonday.setDate(currentMonday.getDate() + 7);
         
-        // Setup cấu trúc rỗng ban đầu để tránh lỗi khi render
-        daysArr.forEach(d => {
-            expenseData[d] = {};
-            catsArr.forEach(c => expenseData[d][c] = []);
-        });
-
-        inputTuNgay.value = formatToInputDate(targetMonday);
-        loadWeek(targetMonday);
+        scheduleSave();
     }
 
     inputTuNgay.addEventListener('change', function() {
@@ -785,6 +873,7 @@
         }
     }
 
+    // ============================================ MODAL CHI PHÍ
     function openExpenseModal(day, cat, titleName) {
         currentDay = day; currentCat = cat;
         document.getElementById('expense-modal-title').innerText = 'Điều chỉnh chi phí: ' + titleName;
@@ -829,12 +918,58 @@
         tr.setAttribute('data-total', total);
     }
 
-    // Logic xử lý Chọn Mẫu Chi Tiêu
+    // ============================================ SITE CHỌN MẪU KHÓA HOÀN TOÀN
     function openSampleForThisRow(btn) {
         targetRowForSample = btn.closest('tr');
-        openSampleModal();
+        let tbody = document.getElementById('modal-select-sample-tbody');
+        tbody.innerHTML = '';
+        
+        if(sampleExpenses.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Bạn chưa có mẫu nào. Hãy thêm trong "Chỉnh sửa mẫu gốc".</td></tr>';
+        } else {
+            sampleExpenses.forEach((item, index) => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><input type="text" value="${item.nd}" class="readonly-input" style="width:100%; box-sizing:border-box;" readonly></td>
+                    <td><input type="text" value="${item.dt}" class="readonly-input" style="width:100%; box-sizing:border-box;" readonly></td>
+                    <td><input type="text" value="${item.gia}" class="readonly-input" style="width:100%; box-sizing:border-box;" readonly></td>
+                    <td><button type="button" class="btn-select" onclick="applySampleToRow(${index})">Chọn</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('modal-select-sample').style.display = 'block';
     }
 
+    function closeSampleSelectModal() { document.getElementById('modal-select-sample').style.display = 'none'; }
+    
+    function applySampleToRow(index) {
+        let item = sampleExpenses[index];
+        if (targetRowForSample) {
+            let r = targetRowForSample;
+            r.querySelector('.inp-nd').value = item.nd;
+            r.querySelector('.inp-nd').setAttribute('readonly', true);
+            r.querySelector('.inp-nd').classList.add('readonly-input');
+
+            r.querySelector('.inp-dt').value = item.dt;
+            r.querySelector('.inp-dt').setAttribute('readonly', true);
+            r.querySelector('.inp-dt').classList.add('readonly-input');
+
+            r.querySelector('.inp-gia').value = item.gia;
+            r.querySelector('.inp-gia').setAttribute('readonly', true);
+            r.querySelector('.inp-gia').classList.add('readonly-input');
+
+            r.querySelector('.inp-sl').value = 1;
+            calcRowTotal(r);
+            targetRowForSample = null;
+        } else {
+            addModalRow({ nd: item.nd, dt: item.dt, gia: item.gia, sl: 1, total: parseFloat(item.gia.replace(/,/g, '')) || 0, isSample: true });
+        }
+        closeSampleSelectModal();
+    }
+
+    // ============================================ SITE CHỈNH SỬA MẪU GỐC
     function openSampleModal() {
         let tbody = document.getElementById('modal-sample-tbody');
         tbody.innerHTML = '';
@@ -846,13 +981,14 @@
     function addSampleRow(item = {nd:'', dt:'', gia:''}) {
         let tbody = document.getElementById('modal-sample-tbody');
         let tr = document.createElement('tr');
-        tr.innerHTML = `<td class="stt-cell-sample"></td><td><input type="text" class="inp-samp-nd" value="${item.nd}"></td><td><input type="text" class="inp-samp-dt" value="${item.dt}"></td><td><input type="text" class="inp-samp-gia" value="${item.gia}"></td><td><button type="button" class="btn-select" onclick="selectSample(this)">Chọn</button><button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">X</button></td>`;
+        tr.innerHTML = `<td class="stt-cell-sample"></td><td><input type="text" class="inp-samp-nd" value="${item.nd}"></td><td><input type="text" class="inp-samp-dt" value="${item.dt}"></td><td><input type="text" class="inp-samp-gia" value="${item.gia}"></td><td><button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">Xóa</button></td>`;
         tbody.appendChild(tr);
         tr.querySelector('.inp-samp-gia').addEventListener('input', function() { dinhDangDauPhay(this); });
         updateSampleSTT();
     }
     function removeSampleRow(btn) { btn.closest('tr').remove(); updateSampleSTT(); }
     function updateSampleSTT() { document.querySelectorAll('#modal-sample-tbody tr').forEach((row, i) => row.querySelector('.stt-cell-sample').innerText = i + 1); }
+    
     function saveAndCloseSampleModal() {
         sampleExpenses = Array.from(document.querySelectorAll('#modal-sample-tbody tr')).map(row => ({
             nd: row.querySelector('.inp-samp-nd').value.trim(),
@@ -860,36 +996,10 @@
             gia: row.querySelector('.inp-samp-gia').value.trim()
         })).filter(i => i.nd || i.dt || i.gia);
         closeSampleModal();
-    }
-    
-    function selectSample(btn) {
-        let tr = btn.closest('tr');
-        let nd = tr.querySelector('.inp-samp-nd').value.trim(), dt = tr.querySelector('.inp-samp-dt').value.trim(), giaStr = tr.querySelector('.inp-samp-gia').value.trim();
-        let gia = parseFloat(giaStr.replace(/,/g, '')) || 0;
-
-        if (targetRowForSample) {
-            let r = targetRowForSample;
-            r.querySelector('.inp-nd').value = nd;
-            r.querySelector('.inp-nd').setAttribute('readonly', true);
-            r.querySelector('.inp-nd').classList.add('readonly-input');
-
-            r.querySelector('.inp-dt').value = dt;
-            r.querySelector('.inp-dt').setAttribute('readonly', true);
-            r.querySelector('.inp-dt').classList.add('readonly-input');
-
-            r.querySelector('.inp-gia').value = giaStr;
-            r.querySelector('.inp-gia').setAttribute('readonly', true);
-            r.querySelector('.inp-gia').classList.add('readonly-input');
-
-            r.querySelector('.inp-sl').value = 1;
-            calcRowTotal(r);
-            targetRowForSample = null;
-        } else {
-            addModalRow({ nd, dt, gia: giaStr, sl: 1, total: gia, isSample: true });
-        }
-        closeSampleModal();
+        scheduleSave();
     }
 
+    // ============================================ LƯU ĐIỀU CHỈNH CHI PHÍ
     document.getElementById('btn-save-expense').addEventListener('click', function() {
         let newData = [], hasError = false;
         document.querySelectorAll('#modal-expense-tbody tr').forEach(row => {
@@ -910,6 +1020,7 @@
         renderMainCategory(currentDay, currentCat);
         updateDayTotals(currentDay);
         closeExpenseModal();
+        scheduleSave();
     });
 
     function renderMainCategory(day, cat) {
@@ -931,7 +1042,7 @@
         document.getElementById(`tong-chi-${day}`).innerText = formatVND(total);
     }
 
-    // Module Bảng Hệ Số Quỹ
+    // ============================================ BẢNG HỆ SỐ NỘP QUỸ
     function renderFundTable(funds, mondayDate) {
         const tbody = document.getElementById('fund-table-body');
         tbody.innerHTML = '';
@@ -980,6 +1091,7 @@
         `;
         tbody.appendChild(tr);
         updateFundSTT();
+        scheduleSave();
     }
 
     function removeFundRow(btn) {
@@ -989,22 +1101,46 @@
             renderMainCategory(d, 'khac'); updateDayTotals(d);
         });
         tr.remove(); updateFundSTT(); updateFundSummary();
+        scheduleSave();
     }
 
     function updateFundSTT() { document.querySelectorAll('#fund-table-body tr').forEach((row, i) => row.querySelector('.fund-stt').innerText = i + 1); }
 
     function syncFundToExpense(element) {
-        const tr = element.closest('tr'), id = tr.getAttribute('data-fund-id'), name = tr.querySelector('.fund-name').value.trim(), target = tr.querySelector('.fund-target').value.trim(), factor = parseFloat(tr.querySelector('.fund-factor').value) || 0, day = tr.querySelector('.fund-day').value;
+        const tr = element.closest('tr');
+        const id = tr.getAttribute('data-fund-id');
+        const name = tr.querySelector('.fund-name').value.trim();
+        const target = tr.querySelector('.fund-target').value.trim();
+        const factorStr = tr.querySelector('.fund-factor').value.trim(); // Kiểm tra xem chuỗi có rỗng không
+        const day = tr.querySelector('.fund-day').value;
+        
+        // Khi factorStr rỗng => không thực thi
+        let factor = parseFloat(factorStr);
+        if (isNaN(factor)) factor = 0; // Để nếu điền "0" thì hiểu là số 0
+
+        // Reset dữ liệu cũ trong chi tiêu
         daysArr.forEach(d => {
             expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== id);
             renderMainCategory(d, 'khac'); updateDayTotals(d);
         });
-        if (day && name && factor > 0) {
+
+        // Chỉ add lại vào chi tiêu khi có điền factor (chữ rỗng không add) và đã chọn ngày, điền tên
+        if (day && name && factorStr !== '') {
             const money = factor * 100000;
-            expenseData[day]['khac'].push({ nd: "Nộp quỹ: " + name, dt: target || "Hệ số", gia: money.toLocaleString('en-US'), sl: 1, total: money, isFund: true, fundUniqueId: id });
-            renderMainCategory(day, 'khac'); updateDayTotals(day);
+            expenseData[day]['khac'].push({ 
+                nd: "Nộp quỹ: " + name, 
+                dt: target || "Hệ số", 
+                gia: money.toLocaleString('en-US'), 
+                sl: 1, 
+                total: money, 
+                isFund: true, 
+                fundUniqueId: id 
+            });
+            renderMainCategory(day, 'khac'); 
+            updateDayTotals(day);
         }
         updateFundSummary();
+        scheduleSave(); // Auto save mỗi khi chỉnh sửa
     }
 
     function updateFundSummary() {
@@ -1018,7 +1154,24 @@
         document.getElementById('display-phan-tram-quy').innerText = percent.toFixed(1) + '%';
     }
 
-    window.onload = function() { renderWeekUI(); initTimeModule(); };
+    window.onload = async function() { 
+        renderWeekUI(); 
+        
+        // Setup cấu trúc rỗng ban đầu trước khi fetch Data để khỏi lỗi code
+        daysArr.forEach(d => {
+            expenseData[d] = {};
+            catsArr.forEach(c => expenseData[d][c] = []);
+        });
+
+        await loadFromFirebase(); // Đợi tải xong db từ Cloud
+
+        const currentMonday = getMonday(getGMT7Date());
+        let targetMonday = new Date(currentMonday);
+        targetMonday.setDate(currentMonday.getDate() + 7);
+        document.getElementById('input-tu-ngay').value = formatToInputDate(targetMonday);
+        
+        loadWeek(targetMonday); // Bắt đầu load vào UI
+    };
 </script>
 
 </body>
