@@ -801,13 +801,11 @@
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
         return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
     }
-    // Định dạng Tuần thêm số 0 để lưu/sắp xếp dễ hơn
     function getWeekKey(date) {
         let w = getISOWeekNumber(date);
         return date.getFullYear() + '-' + String(w).padStart(2, '0');
     }
 
-    // Truy xuất cấu trúc quỹ của tuần gần nhất
     function getLatestFunds() {
         let keys = Object.keys(allWeeksData).sort();
         if (keys.length > 0) {
@@ -817,7 +815,6 @@
         return [];
     }
 
-    // Logic Quản lý Dữ liệu các tuần
     function saveCurrentWeekLocally() {
         if (!currentWeekKey) return;
         let funds = [];
@@ -854,7 +851,6 @@
                 catsArr.forEach(c => expenseData[d][c] = []);
             });
             
-            // Lấy từ tuần cũ nhất
             let lastFunds = getLatestFunds();
             let carriedFunds = lastFunds.map((f, idx) => ({
                 id: 'fund_' + Date.now() + '_' + idx,
@@ -1024,11 +1020,13 @@
         let factor = parseFloat(factorStr);
         if (isNaN(factor)) factor = 0; 
 
+        // Xóa dữ liệu cũ của quỹ này
         daysArr.forEach(d => {
             expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== id);
             renderMainCategory(d, 'khac'); updateDayTotals(d);
         });
 
+        // Add lại nếu hợp lệ
         if (day && name && factorStr !== '') {
             const money = factor * 100000;
             expenseData[day]['khac'].push({ 
