@@ -147,7 +147,7 @@
             color: #d32f2f;
         }
 
-        /* Hack CSS để ghi đè format ngày tháng thành dd/mm/yyyy */
+        /* Hack CSS để ghi đè format ngày tháng */
         .date-wrapper {
             position: relative;
             width: 200px;
@@ -321,6 +321,14 @@
             font-family: "Times New Roman", Times, serif;
             font-size: 15px;
         }
+        
+        /* Input chỉ đọc khi chọn mẫu */
+        .readonly-input {
+            background-color: #e9ecef !important;
+            cursor: not-allowed;
+            color: #555;
+        }
+
         .btn-add-row {
             background-color: #4CAF50;
             color: white;
@@ -496,8 +504,9 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">STT</th>
+                    <th style="width: 5%;">Mẫu</th>
                     <th style="width: 25%;">Nội dung chi</th>
-                    <th style="width: 25%;">Đối tượng chi</th>
+                    <th style="width: 20%;">Đối tượng chi</th>
                     <th style="width: 15%;">Giá tiền (VNĐ)</th>
                     <th style="width: 10%;">SL</th>
                     <th style="width: 15%;">Thành tiền</th>
@@ -508,7 +517,7 @@
             </tbody>
         </table>
         <button type="button" class="btn-add-row" onclick="addModalRow()">+ Thêm dòng</button>
-        <button type="button" class="btn-sample" onclick="openSampleModal()">Thêm chi tiêu mẫu</button>
+        <button type="button" class="btn-sample" onclick="targetRowForSample=null; openSampleModal()">Thêm chi tiêu mẫu</button>
         <button id="btn-save-expense" class="btn-save">Hoàn thành</button>
     </div>
 </div>
@@ -541,17 +550,14 @@
     const catsArr = ['ansang', 'antrua', 'antoi', 'dichuyen', 'tietkiem', 'khac'];
     const catsName = ['Ăn sáng', 'Ăn trưa', 'Ăn tối', 'Di chuyển', 'Tiết kiệm', 'Khác'];
     
+    // Quản lý dữ liệu theo tuần
+    let allWeeksData = {};
+    let currentWeekKey = '';
     let expenseData = {};
-    daysArr.forEach(d => {
-        expenseData[d] = {};
-        catsArr.forEach(c => {
-            expenseData[d][c] = []; 
-        });
-    });
-
     let sampleExpenses = []; 
     let currentDay = '';
     let currentCat = '';
+    let targetRowForSample = null; // Quản lý dòng chi tiêu đang chọn mẫu
 
     function renderWeekUI() {
         let container = document.getElementById('tuan-container');
@@ -627,10 +633,9 @@
     }
 
     function showDay(dayId) {
-    switchModule('module-chi-tieu-tuan');
-    // Đã xóa vòng lặp ẩn các thứ, đổi thành cuộn mượt đến thứ được chọn
-    document.getElementById('section-' + dayId).scrollIntoView({ behavior: 'smooth' });
-}
+        switchModule('module-chi-tieu-tuan');
+        document.getElementById('section-' + dayId).scrollIntoView({ behavior: 'smooth' });
+    }
 
     function formatVND(soTien) { return soTien.toLocaleString('vi-VN') + ' đ'; }
     function dinhDangDauPhay(input) {
@@ -679,21 +684,89 @@
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
         return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
     }
+    function getWeekKey(date) {
+        return date.getFullYear() + '-' + getISOWeekNumber(date);
+    }
+
+    // Logic Quản lý Dữ liệu các tuần
+    function saveCurrentWeek() {
+        if (!currentWeekKey) return;
+        let funds = [];
+        document.querySelectorAll('#fund-table-body tr').forEach(row => {
+            funds.push({
+                id: row.getAttribute('data-fund-id'),
+                name: row.querySelector('.fund-name').value.trim(),
+                target: row.querySelector('.fund-target').value.trim(),
+                factor: row.querySelector('.fund-factor').value.trim(),
+                day: row.querySelector('.fund-day').value
+            });
+        });
+        allWeeksData[currentWeekKey] = {
+            expenses: JSON.parse(JSON.stringify(expenseData)),
+            funds: funds
+        };
+    }
+
+    function loadWeek(targetMonday) {
+        let newKey = getWeekKey(targetMonday);
+        if (currentWeekKey && currentWeekKey !== newKey) {
+            saveCurrentWeek();
+        }
+
+        currentWeekKey = newKey;
+        updateTimeData(targetMonday);
+
+        if (allWeeksData[newKey]) {
+            // Tải dữ liệu cũ
+            expenseData = JSON.parse(JSON.stringify(allWeeksData[newKey].expenses));
+            renderFundTable(allWeeksData[newKey].funds, targetMonday);
+        } else {
+            // Khởi tạo expense rỗng
+            daysArr.forEach(d => {
+                expenseData[d] = {};
+                catsArr.forEach(c => expenseData[d][c] = []);
+            });
+            
+            // Kế thừa danh sách quỹ nhưng reset factor
+            let carriedFunds = [];
+            document.querySelectorAll('#fund-table-body tr').forEach(row => {
+                carriedFunds.push({
+                    id: row.getAttribute('data-fund-id'),
+                    name: row.querySelector('.fund-name').value.trim(),
+                    target: row.querySelector('.fund-target').value.trim(),
+                    factor: '', // Xóa hệ số
+                    day: row.querySelector('.fund-day').value
+                });
+            });
+            renderFundTable(carriedFunds, targetMonday);
+        }
+
+        daysArr.forEach(d => {
+            catsArr.forEach(c => renderMainCategory(d, c));
+            updateDayTotals(d);
+        });
+    }
 
     function initTimeModule() {
         const currentMonday = getMonday(getGMT7Date());
-        let nextMonday = new Date(currentMonday);
-        nextMonday.setDate(currentMonday.getDate() + 7);
-        inputTuNgay.value = formatToInputDate(nextMonday);
-        updateTimeData(nextMonday);
+        let targetMonday = new Date(currentMonday);
+        targetMonday.setDate(currentMonday.getDate() + 7);
+        
+        // Setup cấu trúc rỗng ban đầu để tránh lỗi khi render
+        daysArr.forEach(d => {
+            expenseData[d] = {};
+            catsArr.forEach(c => expenseData[d][c] = []);
+        });
+
+        inputTuNgay.value = formatToInputDate(targetMonday);
+        loadWeek(targetMonday);
     }
 
     inputTuNgay.addEventListener('change', function() {
         if (!this.value) return;
         let monday = getMonday(new Date(this.value));
         this.value = formatToInputDate(monday);
-        resetWeeklyFundData(); // Làm mới bảng quỹ khi đổi tuần
-        updateTimeData(monday);
+        loadWeek(monday);
     });
 
     function updateTimeData(monday) {
@@ -723,14 +796,19 @@
     }
     function closeExpenseModal() { document.getElementById('modal-expense').style.display = 'none'; }
 
-    function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0 }) {
+    function addModalRow(item = { nd: '', dt: '', gia: '', sl: 1, total: 0, isSample: false }) {
         let tbody = document.getElementById('modal-expense-tbody');
         let tr = document.createElement('tr');
+        
+        let roAttr = item.isSample ? 'readonly' : '';
+        let inputClass = item.isSample ? 'readonly-input' : '';
+
         tr.innerHTML = `
             <td class="stt-cell"></td>
-            <td><input type="text" class="inp-nd" value="${item.nd}" placeholder="Nội dung"></td>
-            <td><input type="text" class="inp-dt" value="${item.dt}" placeholder="Đối tượng"></td>
-            <td><input type="text" class="inp-gia" value="${item.gia}" placeholder="Bắt buộc"></td>
+            <td><button type="button" class="btn-add" style="width:20px;height:20px;font-size:16px;line-height:18px;margin:0;" onclick="openSampleForThisRow(this)">+</button></td>
+            <td><input type="text" class="inp-nd ${inputClass}" value="${item.nd}" placeholder="Nội dung" ${roAttr}></td>
+            <td><input type="text" class="inp-dt ${inputClass}" value="${item.dt}" placeholder="Đối tượng" ${roAttr}></td>
+            <td><input type="text" class="inp-gia ${inputClass}" value="${item.gia}" placeholder="Bắt buộc" ${roAttr}></td>
             <td><input type="number" class="inp-sl" value="${item.sl}" min="1"></td>
             <td class="cell-thanh-tien" style="font-weight:bold;">${formatVND(item.total)}</td>
             <td><button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button></td>
@@ -751,6 +829,12 @@
         tr.setAttribute('data-total', total);
     }
 
+    // Logic xử lý Chọn Mẫu Chi Tiêu
+    function openSampleForThisRow(btn) {
+        targetRowForSample = btn.closest('tr');
+        openSampleModal();
+    }
+
     function openSampleModal() {
         let tbody = document.getElementById('modal-sample-tbody');
         tbody.innerHTML = '';
@@ -758,6 +842,7 @@
         document.getElementById('modal-sample').style.display = 'block';
     }
     function closeSampleModal() { document.getElementById('modal-sample').style.display = 'none'; }
+    
     function addSampleRow(item = {nd:'', dt:'', gia:''}) {
         let tbody = document.getElementById('modal-sample-tbody');
         let tr = document.createElement('tr');
@@ -776,19 +861,48 @@
         })).filter(i => i.nd || i.dt || i.gia);
         closeSampleModal();
     }
+    
     function selectSample(btn) {
         let tr = btn.closest('tr');
         let nd = tr.querySelector('.inp-samp-nd').value.trim(), dt = tr.querySelector('.inp-samp-dt').value.trim(), giaStr = tr.querySelector('.inp-samp-gia').value.trim();
-        addModalRow({ nd, dt, gia: giaStr, sl: 1, total: parseFloat(giaStr.replace(/,/g, '')) || 0 });
+        let gia = parseFloat(giaStr.replace(/,/g, '')) || 0;
+
+        if (targetRowForSample) {
+            let r = targetRowForSample;
+            r.querySelector('.inp-nd').value = nd;
+            r.querySelector('.inp-nd').setAttribute('readonly', true);
+            r.querySelector('.inp-nd').classList.add('readonly-input');
+
+            r.querySelector('.inp-dt').value = dt;
+            r.querySelector('.inp-dt').setAttribute('readonly', true);
+            r.querySelector('.inp-dt').classList.add('readonly-input');
+
+            r.querySelector('.inp-gia').value = giaStr;
+            r.querySelector('.inp-gia').setAttribute('readonly', true);
+            r.querySelector('.inp-gia').classList.add('readonly-input');
+
+            r.querySelector('.inp-sl').value = 1;
+            calcRowTotal(r);
+            targetRowForSample = null;
+        } else {
+            addModalRow({ nd, dt, gia: giaStr, sl: 1, total: gia, isSample: true });
+        }
+        closeSampleModal();
     }
 
     document.getElementById('btn-save-expense').addEventListener('click', function() {
         let newData = [], hasError = false;
         document.querySelectorAll('#modal-expense-tbody tr').forEach(row => {
-            let nd = row.querySelector('.inp-nd').value.trim(), giaStr = row.querySelector('.inp-gia').value.trim(), gia = parseFloat(giaStr.replace(/,/g, '')) || 0, sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
+            let inpNd = row.querySelector('.inp-nd');
+            let nd = inpNd.value.trim();
+            let isSample = inpNd.hasAttribute('readonly');
+            let giaStr = row.querySelector('.inp-gia').value.trim(); 
+            let gia = parseFloat(giaStr.replace(/,/g, '')) || 0; 
+            let sl = parseFloat(row.querySelector('.inp-sl').value) || 0;
+            
             if (nd !== '' && (gia <= 0 || sl <= 0)) hasError = true;
             if (nd !== '' || row.querySelector('.inp-dt').value.trim() !== '' || giaStr !== '') {
-                if (gia > 0 && sl > 0) newData.push({ nd, dt: row.querySelector('.inp-dt').value.trim(), gia: giaStr, sl, total: gia * sl });
+                if (gia > 0 && sl > 0) newData.push({ nd, dt: row.querySelector('.inp-dt').value.trim(), gia: giaStr, sl, total: gia * sl, isSample });
             }
         });
         if (hasError) { alert("Giá và SL phải > 0!"); return; }
@@ -811,21 +925,38 @@
         document.getElementById(`total-${day}-${cat}`).innerText = formatVND(total);
         document.getElementById(`summary-${day}-${cat}`).innerText = formatVND(total);
     }
+    
     function updateDayTotals(day) {
         let total = catsArr.reduce((sum, cat) => sum + expenseData[day][cat].reduce((s, i) => s + i.total, 0), 0);
         document.getElementById(`tong-chi-${day}`).innerText = formatVND(total);
     }
 
     // Module Bảng Hệ Số Quỹ
-    function resetWeeklyFundData() {
-        // Xóa bảng
-        document.getElementById('fund-table-body').innerHTML = '';
-        // Xóa các khoản chi "isFund" trong expenseData
-        daysArr.forEach(d => {
-            expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => !item.isFund);
-            renderMainCategory(d, 'khac');
-            updateDayTotals(d);
+    function renderFundTable(funds, mondayDate) {
+        const tbody = document.getElementById('fund-table-body');
+        tbody.innerHTML = '';
+        let currentYear = mondayDate ? mondayDate.getFullYear() : new Date().getFullYear();
+        let currentWeek = mondayDate ? getISOWeekNumber(mondayDate) : 0;
+
+        funds.forEach(f => {
+            let tr = document.createElement('tr');
+            tr.setAttribute('data-fund-id', f.id);
+            tr.innerHTML = `
+                <td class="fund-stt"></td>
+                <td><input type="text" value="${currentYear}" readonly style="text-align:center; border:none; background:transparent;"></td>
+                <td><input type="text" value="${currentWeek}" readonly style="text-align:center; border:none; background:transparent;"></td>
+                <td><input type="text" class="fund-name" value="${f.name}" placeholder="Tên quỹ..." oninput="syncFundToExpense(this)"></td>
+                <td><input type="text" class="fund-target" value="${f.target}" placeholder="Đối tượng..." oninput="syncFundToExpense(this)"></td>
+                <td><input type="text" class="fund-factor" value="${f.factor}" placeholder="0.00" oninput="formatFloatInput(this); syncFundToExpense(this)"></td>
+                <td><select class="fund-day" onchange="syncFundToExpense(this)">
+                    <option value="">-- Chọn --</option>
+                    ${daysArr.map((d, i) => `<option value="${d}" ${f.day === d ? 'selected' : ''}>${daysName[i]}</option>`).join('')}
+                </select></td>
+                <td><button type="button" class="btn-remove-row" onclick="removeFundRow(this)">X</button></td>
+            `;
+            tbody.appendChild(tr);
         });
+        updateFundSTT();
         updateFundSummary();
     }
 
