@@ -402,6 +402,19 @@
             margin-left: 15px;
             font-weight: normal;
         }
+
+        /* Style cho mục Edit Ghi Chú */
+        .note-edit-area {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px dashed #7f8c8d;
+        }
+        .note-edit-area label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -505,22 +518,43 @@
     </div>
 
     <div id="module-ghi-chu" class="module">
-        <h2 class="module-title">Ghi Chú</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px;">
+            <h2 class="module-title" style="border:none; margin:0; padding:0;">Ghi Chú</h2>
+            <button class="btn-sample" style="margin:0;" onclick="toggleNoteEdit()">Thay đổi nội dung</button>
+        </div>
+
+        <div id="note-edit-area" class="note-edit-area" style="display: none;">
+            <div style="margin-bottom: 10px; font-weight: bold;">Tùy chọn xử lý tiền dư:</div>
+            <div>
+                <label><input type="radio" name="note-submit" value="khong_nop" onchange="renderNoteDisplay()"> Không nộp</label>
+                <label><input type="radio" name="note-submit" value="nop" onchange="renderNoteDisplay()"> Nộp</label>
+            </div>
+            
+            <div id="note-nop-options" style="margin-top: 15px; display: none;">
+                <div style="margin-bottom: 10px;">
+                    <span style="font-weight: bold; margin-right:10px;">Tích lũy đến:</span>
+                    <label><input type="radio" name="note-amount" value="500,000đ" onchange="renderNoteDisplay()"> 500,000đ</label>
+                    <label><input type="radio" name="note-amount" value="750,000đ" onchange="renderNoteDisplay()"> 750,000đ</label>
+                    <label><input type="radio" name="note-amount" value="1,000,000đ" onchange="renderNoteDisplay()"> 1,000,000đ</label>
+                    <label><input type="radio" name="note-amount" value="hơn 1,000,000đ" onchange="renderNoteDisplay()"> hơn 1,000,000đ</label>
+                </div>
+                <div>
+                    <span style="font-weight: bold; margin-right:10px;">Nơi nộp:</span>
+                    <label><input type="radio" name="note-dest" value="stk" onchange="renderNoteDisplay()"> STK</label>
+                    <input type="text" id="note-stk-input" class="note-input" placeholder="Nhập tên/số STK..." oninput="renderNoteDisplay()" style="width: 150px; display:none; padding: 3px;">
+                    
+                    <label><input type="radio" name="note-dest" value="quy" onchange="renderNoteDisplay()"> Quỹ</label>
+                    <select id="note-quy-select" onchange="renderNoteDisplay()" style="display:none; padding: 3px; font-family: inherit;">
+                        <option value="">-- Chọn Quỹ --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <div style="line-height: 1.8; text-align: justify; font-size: 16px;">
             <p>Trên đây là bản kế hoạch chi tiêu cho tuần <strong id="note-tuan"></strong>, có hiệu lực từ 00h00 ngày <strong id="note-tu-ngay"></strong>, hạn sử dụng tới 23h59 ngày <strong id="note-den-ngay"></strong> sẽ hết hiệu lực và được thay bằng bản kế hoạch cho tuần tiếp theo.<br>Khuyến khích chấp hành chi theo đúng bản kế hoạch này.</p>
             <p>Cuối mỗi ngày phải tổng kết lại số tiền đã sử dụng vào phần mềm MISA Sổ Thu Chi để đối chiếu với kế hoạch chi tiêu và cuối mỗi tuần phải nhập tiền tồn vào Phần mềm kiểm toán và xuất ra Phiếu kiểm toán</p>
-            <p>Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ 
-                <label><input type="checkbox" class="note-cb"> 500,000đ</label> | 
-                <label><input type="checkbox" class="note-cb"> 750,000đ</label> | 
-                <label><input type="checkbox" class="note-cb"> 1,000,000đ</label> | 
-                <label><input type="checkbox" class="note-cb"> hơn 1,000,000đ</label>, 
-                số tiền dư ra sẽ 
-                <label><input type="checkbox" class="note-cb"> Nộp</label> | 
-                <label><input type="checkbox" class="note-cb"> Không nộp</label> vào 
-                <label><input type="checkbox" class="note-cb"> STK <input type="text" class="note-input" style="border:none; border-bottom: 1px dotted #000; width: 120px; outline:none; background: transparent; font-family: inherit; font-size: inherit;"></label> | 
-                <label><input type="checkbox" class="note-cb"> Quỹ <input type="text" class="note-input" style="border:none; border-bottom: 1px dotted #000; width: 150px; outline:none; background: transparent; font-family: inherit; font-size: inherit;"></label> 
-                vào thứ 2 tuần kế tiếp
-            </p>
+            <p id="note-display-p3" style="font-weight: bold; color: #2c3e50;">Vui lòng bấm "Thay đổi nội dung" để cấu hình phần này.</p>
         </div>
     </div>
 </div>
@@ -860,9 +894,13 @@
             });
         });
 
+        // Lấy cấu hình của Ghi chú
         let notesState = {
-            checkboxes: Array.from(document.querySelectorAll('#module-ghi-chu .note-cb')).map(cb => cb.checked),
-            inputs: Array.from(document.querySelectorAll('#module-ghi-chu .note-input')).map(inp => inp.value)
+            submit: document.querySelector('input[name="note-submit"]:checked')?.value || '',
+            amount: document.querySelector('input[name="note-amount"]:checked')?.value || '',
+            dest: document.querySelector('input[name="note-dest"]:checked')?.value || '',
+            stk: document.getElementById('note-stk-input').value || '',
+            quyId: document.getElementById('note-quy-select').value || ''
         };
 
         allWeeksData[currentWeekKey] = {
@@ -893,13 +931,27 @@
             }
             renderFundTable(allWeeksData[newKey].funds || [], targetMonday);
             
+            // Khôi phục ghi chú
+            document.querySelectorAll('input[name="note-submit"]').forEach(r => r.checked = false);
+            document.querySelectorAll('input[name="note-amount"]').forEach(r => r.checked = false);
+            document.querySelectorAll('input[name="note-dest"]').forEach(r => r.checked = false);
+            document.getElementById('note-stk-input').value = '';
+            document.getElementById('note-quy-select').value = '';
+
             if (allWeeksData[newKey].notesState) {
                 let ns = allWeeksData[newKey].notesState;
-                document.querySelectorAll('#module-ghi-chu .note-cb').forEach((cb, idx) => cb.checked = ns.checkboxes[idx] || false);
-                document.querySelectorAll('#module-ghi-chu .note-input').forEach((inp, idx) => inp.value = ns.inputs[idx] || '');
+                if(ns.submit) { let el = document.querySelector(`input[name="note-submit"][value="${ns.submit}"]`); if(el) el.checked = true; }
+                if(ns.amount) { let el = document.querySelector(`input[name="note-amount"][value="${ns.amount}"]`); if(el) el.checked = true; }
+                if(ns.dest) { let el = document.querySelector(`input[name="note-dest"][value="${ns.dest}"]`); if(el) el.checked = true; }
+                document.getElementById('note-stk-input').value = ns.stk || '';
+                
+                setTimeout(() => {
+                    updateNoteFundDropdown();
+                    document.getElementById('note-quy-select').value = ns.quyId || '';
+                    renderNoteDisplay();
+                }, 50);
             } else {
-                document.querySelectorAll('#module-ghi-chu .note-cb').forEach(cb => cb.checked = false);
-                document.querySelectorAll('#module-ghi-chu .note-input').forEach(inp => inp.value = '');
+                setTimeout(() => { updateNoteFundDropdown(); renderNoteDisplay(); }, 50);
             }
 
         } else {
@@ -917,8 +969,13 @@
             }));
             renderFundTable(carriedFunds, targetMonday);
 
-            document.querySelectorAll('#module-ghi-chu .note-cb').forEach(cb => cb.checked = false);
-            document.querySelectorAll('#module-ghi-chu .note-input').forEach(inp => inp.value = '');
+            // Mặc định rỗng
+            document.querySelectorAll('input[name="note-submit"]').forEach(r => r.checked = false);
+            document.querySelectorAll('input[name="note-amount"]').forEach(r => r.checked = false);
+            document.querySelectorAll('input[name="note-dest"]').forEach(r => r.checked = false);
+            document.getElementById('note-stk-input').value = '';
+            
+            setTimeout(() => { updateNoteFundDropdown(); renderNoteDisplay(); }, 50);
         }
 
         daysArr.forEach(d => {
@@ -952,11 +1009,85 @@
             if(el) el.innerText = formatDisplayDate(nextDay);
         }
 
-        // Update Ghi chú text
+        // Cập nhật thông tin text Ghi chú
         document.getElementById('note-tuan').innerText = isoWeek;
         document.getElementById('note-tu-ngay').innerText = formatDisplayDate(monday);
         document.getElementById('note-den-ngay').innerText = formatDisplayDate(sunday);
     }
+
+
+    /* ============================================ LOGIC GHI CHÚ ============================================ */
+    function toggleNoteEdit() {
+        const editArea = document.getElementById('note-edit-area');
+        if(editArea.style.display === 'none') {
+            editArea.style.display = 'block';
+            updateNoteFundDropdown();
+        } else {
+            editArea.style.display = 'none';
+        }
+    }
+
+    function renderNoteDisplay() {
+        const submitVal = document.querySelector('input[name="note-submit"]:checked')?.value;
+        const amountVal = document.querySelector('input[name="note-amount"]:checked')?.value || '...';
+        const destVal = document.querySelector('input[name="note-dest"]:checked')?.value;
+        
+        const stkInput = document.getElementById('note-stk-input');
+        const quySelect = document.getElementById('note-quy-select');
+        const nopOptions = document.getElementById('note-nop-options');
+        
+        let displayText = "";
+
+        if (submitVal === 'khong_nop') {
+            nopOptions.style.display = 'none';
+            displayText = "Số tiền còn lại cuối mỗi tuần sẽ không nộp mà chuyển sang tuần sau.";
+        } else if (submitVal === 'nop') {
+            nopOptions.style.display = 'block';
+            
+            let destText = "...";
+            if (destVal === 'stk') {
+                stkInput.style.display = 'inline-block';
+                quySelect.style.display = 'none';
+                destText = "STK " + (stkInput.value || "...");
+            } else if (destVal === 'quy') {
+                stkInput.style.display = 'none';
+                quySelect.style.display = 'inline-block';
+                let fundName = quySelect.options[quySelect.selectedIndex]?.text || "...";
+                if(quySelect.value === "") fundName = "...";
+                destText = "Quỹ " + fundName;
+            } else {
+                stkInput.style.display = 'none';
+                quySelect.style.display = 'none';
+            }
+            
+            displayText = `Số tiền còn lại cuối mỗi tuần sẽ được tích lũy lại cho tới khi đạt đủ ${amountVal}, số tiền dư ra sẽ Nộp vào ${destText} vào thứ 2 tuần kế tiếp.`;
+        } else {
+            nopOptions.style.display = 'none';
+            displayText = "Vui lòng bấm 'Thay đổi nội dung' để cấu hình phần này.";
+        }
+        
+        document.getElementById('note-display-p3').innerText = displayText;
+        scheduleSave();
+    }
+
+    function updateNoteFundDropdown() {
+        const quySelect = document.getElementById('note-quy-select');
+        let currentVal = quySelect.value;
+        quySelect.innerHTML = '<option value="">-- Chọn Quỹ --</option>';
+        
+        document.querySelectorAll('#fund-table-body tr').forEach(row => {
+            let name = row.querySelector('.fund-name').value.trim();
+            let id = row.getAttribute('data-fund-id');
+            if (name) {
+                let opt = document.createElement('option');
+                opt.value = id;
+                opt.text = name;
+                quySelect.appendChild(opt);
+            }
+        });
+        quySelect.value = currentVal;
+    }
+
 
     // ============================================ MODAL QUẢN LÝ QUỸ MỚI =================
     function openFundManager() {
@@ -1041,6 +1172,10 @@
         document.querySelectorAll('#fund-table-body .fund-factor').forEach(input => {
             syncFundToExpense(input);
         });
+
+        // Cập nhật lại list cho Ghi chú dropdown
+        updateNoteFundDropdown();
+        renderNoteDisplay();
 
         closeFundManager();
         scheduleSave();
@@ -1385,12 +1520,9 @@
         document.getElementById('input-tu-ngay').value = formatToInputDate(targetMonday);
         
         loadWeek(targetMonday); 
-
-        // Gắn sự kiện Auto-Save cho các mục trong Ghi chú
-        document.querySelectorAll('#module-ghi-chu .note-cb').forEach(cb => cb.addEventListener('change', scheduleSave));
-        document.querySelectorAll('#module-ghi-chu .note-input').forEach(inp => inp.addEventListener('input', scheduleSave));
     };
 </script>
 
 </body>
 </html>
+Trong module ghi chú ở phần tùy chọn thay đổi nội dung: Nếu tích chọn không nộp thì sau khi lưu trên giao diện module sẽ chỉ còn hiện 2 đoạn đầu với nội dung dòng mới được sửa. Nếu chọn nộp thì sau khi chọn, số tiền tích lũy và nơi nộp và lưu lại thì trên giao diện sẽ hiện 2 đoạn văn đầu và đoạn cuối với nội dung đã được điền ở thay đổi nội dung (2 đoạn đầu và các đoạn cấu hình thay đổi vẫn sẽ giữ nguyên font chữ và size chữ)
