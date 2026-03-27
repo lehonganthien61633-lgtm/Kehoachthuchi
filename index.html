@@ -1928,12 +1928,12 @@
                     let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
                     let title = `${cleanNd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 55%; padding-left: 20px; vertical-align: top; text-align: left;">
+                        <td style="width: 65%; padding-left: 20px; vertical-align: top; text-align: left;">
                             <div style="white-space: normal; word-break: break-word; width: 100%;">+ ${title}</div>
                         </td>
-                        <td style="width: 15%; text-align:right; vertical-align: top;">${item.gia} đ</td>
-                        <td style="width: 10%; text-align:right; vertical-align: top;">${item.sl}</td>
-                        <td style="width: 20%; text-align:right; padding-right: 10px; vertical-align: top;">${formatVND(item.total)}</td>
+                        <td style="width: 12%; text-align:right; vertical-align: top; white-space: nowrap;">${item.gia} đ</td>
+                        <td style="width: 5%; text-align:right; vertical-align: top;">${item.sl}</td>
+                        <td style="width: 18%; text-align:right; padding-right: 10px; vertical-align: top; white-space: nowrap;">${formatVND(item.total)}</td>
                     </tr>`;
                 });
             });
@@ -2139,6 +2139,28 @@
         `;
 
         printArea.innerHTML = printContent;
+
+        // Auto-fit Font size
+        printArea.style.display = 'block';
+        printArea.style.position = 'absolute';
+        printArea.style.left = '-9999px';
+        printArea.style.width = '186mm';
+
+        const autoFitElements = printArea.querySelectorAll('.auto-fit-text');
+        autoFitElements.forEach(el => {
+            let fontSize = 13; 
+            el.style.fontSize = fontSize + 'px';
+            while (el.scrollWidth > el.clientWidth && fontSize > 4) {
+                fontSize -= 0.5;
+                el.style.fontSize = fontSize + 'px';
+            }
+        });
+
+        printArea.style.display = '';
+        printArea.style.position = '';
+        printArea.style.left = '';
+        printArea.style.width = '';
+
         setTimeout(() => window.print(), 200);
     }
 
@@ -2166,3 +2188,5 @@
 
 </body>
 </html>
+Ở mẫu in vẫn chưa giải quyết được vấn đề nội dung chi chưa hiển thị hết mà bị rút gọn có dấu ba chấm đằng sau
+Dữ liệu phải hiển thị đủ (Word wrap) không có ellipsis nữa mà có thể tràn xuống dòng dưới cũng được
