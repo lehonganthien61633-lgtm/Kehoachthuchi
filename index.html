@@ -382,6 +382,25 @@
         }
         .btn-select:hover { background-color: #2ecc71; }
 
+        /* NÚT GẠT (TOGGLE SWITCH) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 14px; width: 14px;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #4CAF50; }
+        input:checked + .slider:before { transform: translateX(16px); }
+
         /* Style cho phần tổng kết quỹ */
         .fund-summary-box {
             margin-top: 20px;
@@ -421,7 +440,7 @@
             margin-bottom: 12px;
         }
 
-        /* CSS KHU VỰC IN ẤN */
+        /* CSS KHU VỰC IN ẤN - TRÀN VIỀN ĐÚNG 1 HÀNG */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -447,7 +466,7 @@
             .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 4px 2px; text-align: center; }
             .p-table-kehoach th { border-bottom: 1px dashed #000; }
             
-            /* Bảng diễn giải co ép các cột cuối sát nhau */
+            /* Auto layout để thu hẹp 3 cột cuối */
             .p-table-diengiai { width: 100%; border-collapse: collapse; margin-bottom: 5px; table-layout: auto; }
             .p-table-diengiai td { padding: 4px; border: none; }
             
@@ -736,8 +755,9 @@
                 <tr>
                     <th style="width: 5%;">STT</th>
                     <th style="width: 35%;">Nội dung chi</th>
-                    <th style="width: 35%;">Đối tượng chi</th>
-                    <th style="width: 20%;">Giá tiền (VNĐ)</th>
+                    <th style="width: 30%;">Đối tượng chi</th>
+                    <th style="width: 15%;">Giá tiền (VNĐ)</th>
+                    <th style="width: 10%;">Cấu hình</th>
                     <th style="width: 5%;">Xóa</th>
                 </tr>
             </thead>
@@ -746,6 +766,16 @@
         </table>
         <button type="button" class="btn-add-row" onclick="addSampleRow()">+ Thêm mẫu</button>
         <button type="button" class="btn-save" onclick="saveAndCloseSampleModal()">Lưu & Đóng</button>
+    </div>
+</div>
+
+<div id="modal-sample-config" class="modal" style="z-index: 50;">
+    <div class="modal-content" style="max-width: 400px; padding: 20px;">
+        <span class="close" onclick="closeSampleConfig()">&times;</span>
+        <h2 class="module-title" style="border-bottom:none; margin-bottom:15px; font-size:1.3em;">Danh mục áp dụng</h2>
+        <div id="config-toggles-container" style="margin-bottom: 20px;">
+            </div>
+        <button type="button" class="btn-save" onclick="saveSampleConfig()">Xác nhận</button>
     </div>
 </div>
 
@@ -805,6 +835,7 @@
     let currentDay = '';
     let currentCat = '';
     let targetRowForSample = null;
+    let currentSampleConfigRow = null;
 
     // HÀM ĐẢM BẢO CẤU TRÚC DỮ LIỆU ĐẦY ĐỦ
     function ensureExpenseDataStructure() {
@@ -913,7 +944,8 @@
         
         daysArr.forEach(d => {
             catsArr.forEach(c => {
-                let catTotal = expenseData[d][c].reduce((s, item) => s + item.total, 0);
+                // Đảm bảo ép đúng kiểu số học, loại bỏ hoàn toàn việc nối chuỗi String
+                let catTotal = expenseData[d][c].reduce((s, item) => s + (Number(item.total) || 0), 0);
                 sums[c] += catTotal;
                 total += catTotal;
             });
@@ -1188,7 +1220,7 @@
             updateDayTotals(d);
         });
         
-        updateWeeklySummary(); // UPDATE SUMMARY HERE
+        updateWeeklySummary(); 
         scheduleSave();
     }
 
@@ -1490,7 +1522,7 @@
         });
 
         updateFundSummary();
-        updateWeeklySummary(); // UPDATE SUMMARY HERE
+        updateWeeklySummary(); 
         scheduleSave(); 
     }
 
@@ -1590,17 +1622,28 @@
         let tbody = document.getElementById('modal-select-sample-tbody');
         tbody.innerHTML = '';
         
-        if(sampleExpenses.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Bạn chưa có mẫu nào. Hãy thêm trong "Chỉnh sửa mẫu gốc".</td></tr>';
+        // Lọc các mẫu được phép sử dụng ở danh mục hiện tại (currentCat)
+        let validSamples = [];
+        sampleExpenses.forEach((item, index) => {
+            let allowed = item.allowedCats || catsArr; // Nếu dữ liệu cũ không có thì cho phép tất cả
+            if (allowed.includes(currentCat)) {
+                validSamples.push({ item, index });
+            }
+        });
+
+        if(validSamples.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:red; font-style:italic;">Không có mẫu nào được phép sử dụng ở danh mục này. Hãy cấu hình ở "Chỉnh sửa mẫu gốc".</td></tr>';
         } else {
-            sampleExpenses.forEach((item, index) => {
+            validSamples.forEach((obj, displayIndex) => {
+                let item = obj.item;
+                let originalIndex = obj.index;
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${index + 1}</td>
+                    <td>${displayIndex + 1}</td>
                     <td><input type="text" value="${item.nd}" class="readonly-input" style="width:100%; box-sizing:border-box;" readonly></td>
                     <td><input type="text" value="${item.dt}" class="readonly-input" style="width:100%; box-sizing:border-box;" readonly></td>
                     <td><input type="text" value="${item.gia}" class="readonly-input" style="width:100%; box-sizing:border-box;" readonly></td>
-                    <td><button type="button" class="btn-select" onclick="applySampleToRow(${index})">Chọn</button></td>
+                    <td><button type="button" class="btn-select" onclick="applySampleToRow(${originalIndex})">Chọn</button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1661,10 +1704,21 @@
     }
     function closeSampleModal() { document.getElementById('modal-sample').style.display = 'none'; }
     
-    function addSampleRow(item = {nd:'', dt:'', gia:''}) {
+    function addSampleRow(item = {nd:'', dt:'', gia:'', allowedCats: catsArr.slice()}) {
         let tbody = document.getElementById('modal-sample-tbody');
         let tr = document.createElement('tr');
-        tr.innerHTML = `<td class="stt-cell-sample"></td><td><input type="text" class="inp-samp-nd" value="${item.nd}"></td><td><input type="text" class="inp-samp-dt" value="${item.dt}"></td><td><input type="text" class="inp-samp-gia" value="${item.gia}"></td><td><button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">Xóa</button></td>`;
+        
+        let allowedStr = item.allowedCats ? item.allowedCats.join(',') : catsArr.join(',');
+        tr.dataset.allowed = allowedStr;
+
+        tr.innerHTML = `
+            <td class="stt-cell-sample"></td>
+            <td><input type="text" class="inp-samp-nd" value="${item.nd}"></td>
+            <td><input type="text" class="inp-samp-dt" value="${item.dt}"></td>
+            <td><input type="text" class="inp-samp-gia" value="${item.gia}"></td>
+            <td><button type="button" class="btn-sample" style="margin:0; padding:4px 10px; background-color:#f39c12; font-weight:normal;" onclick="openSampleConfig(this)">ℹ️</button></td>
+            <td><button type="button" class="btn-remove-row" onclick="removeSampleRow(this)">Xóa</button></td>
+        `;
         tbody.appendChild(tr);
         tr.querySelector('.inp-samp-gia').addEventListener('input', function() { dinhDangDauPhay(this); });
         updateSampleSTT();
@@ -1673,13 +1727,55 @@
     function updateSampleSTT() { document.querySelectorAll('#modal-sample-tbody tr').forEach((row, i) => row.querySelector('.stt-cell-sample').innerText = i + 1); }
     
     function saveAndCloseSampleModal() {
-        sampleExpenses = Array.from(document.querySelectorAll('#modal-sample-tbody tr')).map(row => ({
-            nd: row.querySelector('.inp-samp-nd').value.trim(),
-            dt: row.querySelector('.inp-samp-dt').value.trim(),
-            gia: row.querySelector('.inp-samp-gia').value.trim()
-        })).filter(i => i.nd || i.dt || i.gia);
+        sampleExpenses = Array.from(document.querySelectorAll('#modal-sample-tbody tr')).map(row => {
+            let allowedStr = row.dataset.allowed;
+            return {
+                nd: row.querySelector('.inp-samp-nd').value.trim(),
+                dt: row.querySelector('.inp-samp-dt').value.trim(),
+                gia: row.querySelector('.inp-samp-gia').value.trim(),
+                allowedCats: allowedStr ? allowedStr.split(',') : catsArr.slice()
+            };
+        }).filter(i => i.nd || i.dt || i.gia);
         closeSampleModal();
         scheduleSave();
+    }
+
+    // ============================================ MỞ POPUP CẤU HÌNH MẪU (Nút Gạt)
+    function openSampleConfig(btn) {
+        currentSampleConfigRow = btn.closest('tr');
+        let allowed = currentSampleConfigRow.dataset.allowed;
+        let allowedArr = allowed ? allowed.split(',') : catsArr.slice();
+        
+        let container = document.getElementById('config-toggles-container');
+        container.innerHTML = '';
+        
+        catsArr.forEach((cat, idx) => {
+            let isChecked = allowedArr.includes(cat) ? 'checked' : '';
+            container.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 8px;">
+                    <span style="font-weight:bold; font-size: 15px;">${catsName[idx]}</span>
+                    <label class="switch">
+                        <input type="checkbox" value="${cat}" class="cat-toggle" ${isChecked}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            `;
+        });
+        document.getElementById('modal-sample-config').style.display = 'block';
+    }
+
+    function closeSampleConfig() {
+        document.getElementById('modal-sample-config').style.display = 'none';
+        currentSampleConfigRow = null;
+    }
+
+    function saveSampleConfig() {
+        if (currentSampleConfigRow) {
+            let checkboxes = document.querySelectorAll('#config-toggles-container .cat-toggle:checked');
+            let selected = Array.from(checkboxes).map(cb => cb.value);
+            currentSampleConfigRow.dataset.allowed = selected.join(',');
+        }
+        closeSampleConfig();
     }
 
     // ============================================ LƯU ĐIỀU CHỈNH CHI PHÍ
@@ -1724,7 +1820,7 @@
         updateDayTotals(currentDay);
         closeExpenseModal();
         
-        updateWeeklySummary(); // UPDATE SUMMARY HERE
+        updateWeeklySummary(); 
         scheduleSave();
     });
 
@@ -1748,7 +1844,7 @@
     
     function updateDayTotals(day) {
         ensureExpenseDataStructure();
-        let total = catsArr.reduce((sum, cat) => sum + expenseData[day][cat].reduce((s, i) => s + i.total, 0), 0);
+        let total = catsArr.reduce((sum, cat) => sum + expenseData[day][cat].reduce((s, i) => s + (Number(i.total) || 0), 0), 0);
         document.getElementById(`tong-chi-${day}`).innerText = formatVND(total);
     }
 
@@ -1942,7 +2038,7 @@
             let kehoachCells = '';
             
             catsArr.forEach(cat => {
-                let catTotal = expenseData[day][cat].reduce((s, i) => s + i.total, 0);
+                let catTotal = expenseData[day][cat].reduce((s, i) => s + (Number(i.total) || 0), 0);
                 dayTotal += catTotal;
                 kehoachCells += `<td style="text-align:right;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</td>`;
             });
@@ -1968,7 +2064,7 @@
 
             catsArr.forEach((cat, cIdx) => {
                 let catItems = expenseData[day][cat];
-                let catTotal = catItems.reduce((s, i) => s + i.total, 0);
+                let catTotal = catItems.reduce((s, i) => s + (Number(i.total) || 0), 0);
                 
                 daysHtml += `<tr>
                     <td colspan="4" style="text-align:left; font-weight:bold; padding-top: 6px; padding-bottom: 2px;">- ${catsName[cIdx]}: <span style="margin-left:20px;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</span></td>
@@ -1979,7 +2075,7 @@
                     let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
                     let title = `${cleanNd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 100%; max-width: 0; padding-left: 20px; vertical-align: bottom; text-align: left; white-space: nowrap; overflow: hidden;">
+                        <td style="width: auto; max-width: 0; padding-left: 20px; vertical-align: bottom; text-align: left; white-space: nowrap; overflow: hidden;">
                             <div class="auto-fit-text" style="display: inline-block; white-space: nowrap; font-size: 13px;">+ ${title}</div>
                         </td>
                         <td style="width: 1%; text-align:right; vertical-align: bottom; white-space: nowrap; padding-left: 15px;">${item.gia} đ</td>
