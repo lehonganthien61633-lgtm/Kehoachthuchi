@@ -447,8 +447,9 @@
             .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 4px 2px; text-align: center; }
             .p-table-kehoach th { border-bottom: 1px dashed #000; }
             
-            .p-table-diengiai { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 5px; }
-            .p-table-diengiai td { padding: 4px; vertical-align: top; border: none; }
+            /* Bỏ table-layout: fixed để bảng tự động co ép 3 cột cuối lại */
+            .p-table-diengiai { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+            .p-table-diengiai td { padding: 4px; border: none; }
             
             .p-fund-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
             .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 12px; }
