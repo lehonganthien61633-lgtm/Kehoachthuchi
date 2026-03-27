@@ -421,7 +421,7 @@
             margin-bottom: 12px;
         }
 
-        /* CSS KHU VỰC IN ẤN - Đã tinh chỉnh thu gọn tối đa */
+        /* CSS KHU VỰC IN ẤN - Đã loại bỏ giới hạn tràn viền để hiển thị đủ */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -434,32 +434,24 @@
                 top: 0; 
                 width: 100%; 
                 font-family: "Times New Roman", Times, serif; 
-                font-size: 13px; /* Thu nhỏ base font size */
+                font-size: 13px; 
                 color: #000; 
                 background: #fff; 
                 line-height: 1.3;
             }
             .print-container {
-                padding: 0 15mm; /* Ép lề để văn bản dàn ra đều */
+                padding: 0 15mm; 
             }
             
-            /* Ép kích thước để tự động fit 4 trang */
             .p-table-kehoach { width: 100%; border-collapse: collapse; margin: 5px 0; border-top: 1.5px dashed #000; border-bottom: 1.5px dashed #000; }
             .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 4px 2px; text-align: center; }
             .p-table-kehoach th { border-bottom: 1px dashed #000; }
             
             .p-table-diengiai { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 5px; }
-            .p-table-diengiai td { padding: 2px 4px; vertical-align: top; border: none; }
+            .p-table-diengiai td { padding: 4px; vertical-align: top; border: none; }
             
             .p-fund-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
             .p-fund-table th, .p-fund-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 12px; }
-            
-            /* Khóa không rớt dòng cho các text tự thu nhỏ */
-            .auto-fit-text {
-                white-space: nowrap; 
-                overflow: hidden; 
-                width: 100%;
-            }
 
             @page { size: A4; margin: 10mm 10mm; }
         }
@@ -1508,10 +1500,13 @@
         let btnDeleteHtml = item.isFund ? '' : `<button type="button" class="btn-remove-row" onclick="removeModalRow(this)">X</button>`;
         let slReadonly = item.isFund ? 'readonly class="inp-sl readonly-input"' : 'min="1" class="inp-sl"';
 
+        // Lọc bỏ chữ "Nộp quỹ:" nếu có trong dữ liệu cũ
+        let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
+
         tr.innerHTML = `
             <td class="stt-cell"></td>
             <td>${btnSampleHtml}</td>
-            <td><input type="text" class="inp-nd ${clsNd}" value="${item.nd}" placeholder="Nội dung" ${attrNd}></td>
+            <td><input type="text" class="inp-nd ${clsNd}" value="${cleanNd}" placeholder="Nội dung" ${attrNd}></td>
             <td><input type="text" class="inp-dt ${clsDt}" value="${item.dt}" placeholder="Đối tượng" ${attrDt}></td>
             <td><input type="text" class="inp-gia ${clsGia}" value="${item.gia}" placeholder="Bắt buộc" ${attrGia}></td>
             <td><input type="number" ${slReadonly} value="${item.sl}"></td>
@@ -1691,8 +1686,9 @@
         
         expenseData[day][cat].forEach((item, i) => {
             total += item.total;
+            let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td style="width: 5%;">${i + 1}</td><td style="width: 45%;">${(item.nd + (item.dt ? " | " + item.dt : "")) || '...'}</td><td style="width: 20%;">${item.gia} đ</td><td style="width: 10%;">${item.sl}</td><td style="width: 20%;">${formatVND(item.total)}</td>`;
+            tr.innerHTML = `<td style="width: 5%;">${i + 1}</td><td style="width: 45%; text-align: left;">${(cleanNd + (item.dt ? " | " + item.dt : "")) || '...'}</td><td style="width: 20%;">${item.gia} đ</td><td style="width: 10%;">${item.sl}</td><td style="width: 20%;">${formatVND(item.total)}</td>`;
             tbody.appendChild(tr);
         });
         document.getElementById(`total-${day}-${cat}`).innerText = formatVND(total);
@@ -1924,18 +1920,20 @@
                 let catTotal = catItems.reduce((s, i) => s + i.total, 0);
                 
                 daysHtml += `<tr>
-                    <td colspan="5" style="text-align:left; font-weight:bold;">- ${catsName[cIdx]}: <span style="margin-left:20px;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</span></td>
+                    <td colspan="4" style="text-align:left; font-weight:bold;">- ${catsName[cIdx]}: <span style="margin-left:20px;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</span></td>
                 </tr>`;
 
                 catItems.forEach(item => {
-                    let title = `${item.nd}${item.dt ? ' | ' + item.dt : ''}`;
+                    // Lọc bỏ triệt để chữ "Nộp quỹ:" với cả các dữ liệu cũ đã lưu
+                    let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
+                    let title = `${cleanNd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 60%; padding-left: 25px;">
-                            <div class="auto-fit-text" style="white-space: nowrap; overflow: hidden; width: 100%;">+ ${title}</div>
+                        <td style="width: 55%; padding-left: 20px; vertical-align: top; text-align: left;">
+                            <div style="white-space: normal; word-break: break-word; width: 100%;">+ ${title}</div>
                         </td>
-                        <td style="width: 15%; text-align:right;">${item.gia} đ</td>
-                        <td style="width: 5%; text-align:right;">${item.sl}</td>
-                        <td style="width: 20%; text-align:right; padding-right: 15px;">${formatVND(item.total)}</td>
+                        <td style="width: 15%; text-align:right; vertical-align: top;">${item.gia} đ</td>
+                        <td style="width: 10%; text-align:right; vertical-align: top;">${item.sl}</td>
+                        <td style="width: 20%; text-align:right; padding-right: 10px; vertical-align: top;">${formatVND(item.total)}</td>
                     </tr>`;
                 });
             });
@@ -2141,28 +2139,6 @@
         `;
 
         printArea.innerHTML = printContent;
-
-        // Auto-fit Font size
-        printArea.style.display = 'block';
-        printArea.style.position = 'absolute';
-        printArea.style.left = '-9999px';
-        printArea.style.width = '186mm';
-
-        const autoFitElements = printArea.querySelectorAll('.auto-fit-text');
-        autoFitElements.forEach(el => {
-            let fontSize = 13; 
-            el.style.fontSize = fontSize + 'px';
-            while (el.scrollWidth > el.clientWidth && fontSize > 4) {
-                fontSize -= 0.5;
-                el.style.fontSize = fontSize + 'px';
-            }
-        });
-
-        printArea.style.display = '';
-        printArea.style.position = '';
-        printArea.style.left = '';
-        printArea.style.width = '';
-
         setTimeout(() => window.print(), 200);
     }
 
