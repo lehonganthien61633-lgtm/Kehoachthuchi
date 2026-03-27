@@ -421,7 +421,7 @@
             margin-bottom: 12px;
         }
 
-        /* CSS KHU VỰC IN ẤN - Đã loại bỏ giới hạn tràn viền để hiển thị đủ */
+        /* CSS KHU VỰC IN ẤN */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -1928,12 +1928,12 @@
                     let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
                     let title = `${cleanNd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 65%; padding-left: 20px; vertical-align: top; text-align: left;">
+                        <td style="width: 74%; padding-left: 20px; vertical-align: top; text-align: left;">
                             <div style="white-space: normal; word-break: break-word; width: 100%;">+ ${title}</div>
                         </td>
-                        <td style="width: 12%; text-align:right; vertical-align: top; white-space: nowrap;">${item.gia} đ</td>
-                        <td style="width: 5%; text-align:right; vertical-align: top;">${item.sl}</td>
-                        <td style="width: 18%; text-align:right; padding-right: 10px; vertical-align: top; white-space: nowrap;">${formatVND(item.total)}</td>
+                        <td style="width: 11%; text-align:right; vertical-align: top; white-space: nowrap;">${item.gia} đ</td>
+                        <td style="width: 4%; text-align:right; vertical-align: top;">${item.sl}</td>
+                        <td style="width: 11%; text-align:right; padding-right: 10px; vertical-align: top; white-space: nowrap;">${formatVND(item.total)}</td>
                     </tr>`;
                 });
             });
@@ -2188,5 +2188,3 @@
 
 </body>
 </html>
-Ở mẫu in vẫn chưa giải quyết được vấn đề nội dung chi chưa hiển thị hết mà bị rút gọn có dấu ba chấm đằng sau
-Dữ liệu phải hiển thị đủ (Word wrap) không có ellipsis nữa mà có thể tràn xuống dòng dưới cũng được
