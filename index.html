@@ -1090,11 +1090,19 @@
         return date.getFullYear() + '-' + String(w).padStart(2, '0');
     }
 
-    function getLatestFunds() {
+    // TÌM LẠI CÁC QUỸ CỦA TUẦN GẦN NHẤT TRƯỚC ĐÓ ĐỂ COPY SANG
+    function getFundsFromPreviousWeek(mondayDate) {
+        let targetKey = getWeekKey(mondayDate);
         let keys = Object.keys(allWeeksData).sort();
+        let pastKeys = keys.filter(k => k < targetKey);
+        
+        if (pastKeys.length > 0) {
+            let latestPastKey = pastKeys[pastKeys.length - 1];
+            return allWeeksData[latestPastKey].funds || [];
+        }
+        // Fallback
         if (keys.length > 0) {
-            let latestKey = keys[keys.length - 1];
-            return allWeeksData[latestKey].funds || [];
+            return allWeeksData[keys[keys.length - 1]].funds || [];
         }
         return [];
     }
@@ -1192,7 +1200,8 @@
                 catsArr.forEach(c => expenseData[d][c] = []);
             });
             
-            let lastFunds = getLatestFunds();
+            // Lấy các quỹ từ TẦN GẦN NHẤT TRƯỚC ĐÓ để chép sang
+            let lastFunds = getFundsFromPreviousWeek(targetMonday);
             let carriedFunds = lastFunds.map((f, idx) => ({
                 id: 'fund_' + Date.now() + '_' + idx,
                 name: f.name,
@@ -1226,7 +1235,19 @@
 
     inputTuNgay.addEventListener('change', function() {
         if (!this.value) return;
-        let monday = getMonday(new Date(this.value));
+        
+        let selectedDate = new Date(this.value);
+        let currentMonday = getMonday(getGMT7Date());
+        let maxMonday = new Date(currentMonday);
+        maxMonday.setDate(currentMonday.getDate() + 7);
+
+        let monday = getMonday(selectedDate);
+        
+        if (monday > maxMonday) {
+            alert("Bạn chỉ được phép lập kế hoạch tối đa đến tuần kế tiếp!");
+            monday = maxMonday;
+        }
+
         this.value = formatToInputDate(monday);
         loadWeek(monday);
     });
@@ -1861,7 +1882,17 @@
     function updateInNgayDisplay() {
         let val = document.getElementById('input-in-ngay').value;
         if(val) {
-            let mon = getMonday(new Date(val));
+            let selectedDate = new Date(val);
+            let currentMonday = getMonday(getGMT7Date());
+            let maxMonday = new Date(currentMonday);
+            maxMonday.setDate(currentMonday.getDate() + 7);
+
+            let mon = getMonday(selectedDate);
+            if (mon > maxMonday) {
+                alert("Chỉ được phép chọn tối đa đến tuần kế tiếp!");
+                mon = maxMonday;
+            }
+
             document.getElementById('display-in-ngay').innerText = formatDisplayDate(mon);
             document.getElementById('input-in-ngay').value = formatToInputDate(mon);
         }
@@ -2312,13 +2343,22 @@
     }
 
     window.onload = async function() { 
+        // 1. Calculate max valid date
+        const currentMonday = getMonday(getGMT7Date());
+        let maxMonday = new Date(currentMonday);
+        maxMonday.setDate(currentMonday.getDate() + 7);
+        let maxDateStr = formatToInputDate(maxMonday);
+
+        // Apply restrictions
+        document.getElementById('input-tu-ngay').setAttribute('max', maxDateStr);
+        document.getElementById('input-in-ngay').setAttribute('max', maxDateStr);
+
         renderWeekUI(); 
         
         ensureExpenseDataStructure();
 
         await loadFromFirebase(); 
 
-        const currentMonday = getMonday(getGMT7Date());
         let targetMonday = new Date(currentMonday);
         targetMonday.setDate(currentMonday.getDate() + 7);
         document.getElementById('input-tu-ngay').value = formatToInputDate(targetMonday);
