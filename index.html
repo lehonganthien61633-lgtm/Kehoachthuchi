@@ -447,8 +447,8 @@
             .p-table-kehoach th, .p-table-kehoach td { border: none; padding: 4px 2px; text-align: center; }
             .p-table-kehoach th { border-bottom: 1px dashed #000; }
             
-            /* Bỏ table-layout: fixed để bảng tự động co ép 3 cột cuối lại */
-            .p-table-diengiai { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+            /* Bảng diễn giải co ép các cột cuối sát nhau */
+            .p-table-diengiai { width: 100%; border-collapse: collapse; margin-bottom: 5px; table-layout: auto; }
             .p-table-diengiai td { padding: 4px; border: none; }
             
             .p-fund-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
@@ -495,6 +495,28 @@
         <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
             <label>Tổng số dư hiện tại:</label>
             <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 2px solid #000; padding-top: 20px;">
+            <h3 style="text-align: center; text-transform: uppercase; margin-top: 0;">Dự kiến chi của tuần</h3>
+            <table>
+                <thead>
+                    <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="dudinh-ansang">0 đ</td>
+                        <td id="dudinh-antrua">0 đ</td>
+                        <td id="dudinh-antoi">0 đ</td>
+                        <td id="dudinh-dichuyen">0 đ</td>
+                        <td id="dudinh-tietkiem">0 đ</td>
+                        <td id="dudinh-khac">0 đ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="total-display" style="text-align: right; margin-top: 10px;">
+                Tổng chi dự kiến tuần: <span id="dudinh-tong" style="color: #d32f2f;">0 đ</span>
+            </div>
         </div>
     </div>
 
@@ -882,6 +904,30 @@
     }
     /* =================================================== */
 
+    // HÀM CẬP NHẬT DỰ KIẾN CHI CỦA TUẦN
+    function updateWeeklySummary() {
+        let sums = { ansang: 0, antrua: 0, antoi: 0, dichuyen: 0, tietkiem: 0, khac: 0 };
+        let total = 0;
+        
+        ensureExpenseDataStructure();
+        
+        daysArr.forEach(d => {
+            catsArr.forEach(c => {
+                let catTotal = expenseData[d][c].reduce((s, item) => s + item.total, 0);
+                sums[c] += catTotal;
+                total += catTotal;
+            });
+        });
+        
+        catsArr.forEach(c => {
+            let el = document.getElementById(`dudinh-${c}`);
+            if (el) el.innerText = formatVND(sums[c]);
+        });
+        
+        let totalEl = document.getElementById('dudinh-tong');
+        if (totalEl) totalEl.innerText = formatVND(total);
+    }
+
     function renderWeekUI() {
         let container = document.getElementById('tuan-container');
         let submenu = document.getElementById('submenu-days');
@@ -1142,6 +1188,7 @@
             updateDayTotals(d);
         });
         
+        updateWeeklySummary(); // UPDATE SUMMARY HERE
         scheduleSave();
     }
 
@@ -1443,6 +1490,7 @@
         });
 
         updateFundSummary();
+        updateWeeklySummary(); // UPDATE SUMMARY HERE
         scheduleSave(); 
     }
 
@@ -1675,6 +1723,8 @@
         renderMainCategory(currentDay, currentCat);
         updateDayTotals(currentDay);
         closeExpenseModal();
+        
+        updateWeeklySummary(); // UPDATE SUMMARY HERE
         scheduleSave();
     });
 
@@ -1921,7 +1971,7 @@
                 let catTotal = catItems.reduce((s, i) => s + i.total, 0);
                 
                 daysHtml += `<tr>
-                    <td colspan="4" style="text-align:left; font-weight:bold;">- ${catsName[cIdx]}: <span style="margin-left:20px;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</span></td>
+                    <td colspan="4" style="text-align:left; font-weight:bold; padding-top: 6px; padding-bottom: 2px;">- ${catsName[cIdx]}: <span style="margin-left:20px;">${catTotal > 0 ? formatVND(catTotal) : '0 đ'}</span></td>
                 </tr>`;
 
                 catItems.forEach(item => {
@@ -1929,12 +1979,12 @@
                     let cleanNd = item.nd ? item.nd.replace(/^Nộp quỹ:\s*/i, '') : '';
                     let title = `${cleanNd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 74%; padding-left: 20px; vertical-align: top; text-align: left;">
-                            <div style="white-space: normal; word-break: break-word; width: 100%;">+ ${title}</div>
+                        <td style="width: 100%; max-width: 0; padding-left: 20px; vertical-align: bottom; text-align: left; white-space: nowrap; overflow: hidden;">
+                            <div class="auto-fit-text" style="display: inline-block; white-space: nowrap; font-size: 13px;">+ ${title}</div>
                         </td>
-                        <td style="width: 11%; text-align:right; vertical-align: top; white-space: nowrap;">${item.gia} đ</td>
-                        <td style="width: 4%; text-align:right; vertical-align: top;">${item.sl}</td>
-                        <td style="width: 11%; text-align:right; padding-right: 10px; vertical-align: top; white-space: nowrap;">${formatVND(item.total)}</td>
+                        <td style="width: 1%; text-align:right; vertical-align: bottom; white-space: nowrap; padding-left: 15px;">${item.gia} đ</td>
+                        <td style="width: 1%; text-align:center; vertical-align: bottom; white-space: nowrap; padding-left: 15px;">${item.sl}</td>
+                        <td style="width: 1%; text-align:right; padding-right: 10px; vertical-align: bottom; white-space: nowrap; padding-left: 15px;">${formatVND(item.total)}</td>
                     </tr>`;
                 });
             });
@@ -2151,7 +2201,7 @@
         autoFitElements.forEach(el => {
             let fontSize = 13; 
             el.style.fontSize = fontSize + 'px';
-            while (el.scrollWidth > el.clientWidth && fontSize > 4) {
+            while (el.scrollWidth > el.parentElement.clientWidth && fontSize > 4) {
                 fontSize -= 0.5;
                 el.style.fontSize = fontSize + 'px';
             }
