@@ -458,7 +458,6 @@
             .auto-fit-text {
                 white-space: nowrap; 
                 overflow: hidden; 
-                text-overflow: ellipsis; 
                 width: 100%;
             }
 
@@ -1428,11 +1427,11 @@
             expenseData[d]['khac'] = expenseData[d]['khac'].filter(item => item.fundUniqueId !== id);
         });
 
-        // Add lại nếu hợp lệ
+        // Add lại nếu hợp lệ (Chỉ ghi Tên quỹ, bỏ chữ Nộp quỹ)
         if (day && name && factorStr !== '') {
             const money = factor * 100000;
             expenseData[day]['khac'].push({ 
-                nd: "Nộp quỹ: " + name, 
+                nd: name, 
                 dt: target || "Hệ số", 
                 gia: money.toLocaleString('en-US'), 
                 sl: 1, 
@@ -1931,12 +1930,12 @@
                 catItems.forEach(item => {
                     let title = `${item.nd}${item.dt ? ' | ' + item.dt : ''}`;
                     daysHtml += `<tr>
-                        <td style="width: 40%; padding-left: 25px;">
-                            <div class="auto-fit-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">+ ${title}</div>
+                        <td style="width: 60%; padding-left: 25px;">
+                            <div class="auto-fit-text" style="white-space: nowrap; overflow: hidden; width: 100%;">+ ${title}</div>
                         </td>
                         <td style="width: 15%; text-align:right;">${item.gia} đ</td>
                         <td style="width: 5%; text-align:right;">${item.sl}</td>
-                        <td style="width: 15%; text-align:right;">${formatVND(item.total)}</td>
+                        <td style="width: 20%; text-align:right; padding-right: 15px;">${formatVND(item.total)}</td>
                     </tr>`;
                 });
             });
@@ -2153,7 +2152,7 @@
         autoFitElements.forEach(el => {
             let fontSize = 13; 
             el.style.fontSize = fontSize + 'px';
-            while (el.scrollWidth > el.clientWidth && fontSize > 8) {
+            while (el.scrollWidth > el.clientWidth && fontSize > 4) {
                 fontSize -= 0.5;
                 el.style.fontSize = fontSize + 'px';
             }
