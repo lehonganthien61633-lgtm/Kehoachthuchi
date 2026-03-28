@@ -696,10 +696,19 @@
             </thead>
             <tbody id="print-history-tbody">
             </tbody>
-        </table>
-    </div>
+   </div>
 </div>
 
+<div style="text-align: center; margin-top: auto; padding: 30px 20px; color: #333; width: 100%;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <img src="https://lh3.googleusercontent.com/d/17dh-SYcmGxXsFiFOvZihF8PgsM3vHEEV" alt="[LOGO]" style="height: 80px; display: inline-block;"> 
+        <span style="font-size: 16px; font-weight: bold; color: #1a1a1a;">Copyright © 2026 Thiên Trường Software. All rights reserved.</span>
+    </div>
+    <div style="max-width: 650px; margin: 15px auto 0; border-top: 1px solid #ccc; padding-top: 10px; font-size: 13px; color: #444; line-height: 1.6;">
+        Established March 22, 2026 | Saigon, Vietnam | https://lehonganthien61633-lgtm.github.io/kiemtoan/<br>
+        <span style="font-style: italic;">Bản quyền thuộc về Thiên Trường Software</span>
+    </div>
+</div>
 <div id="modal-expense" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeExpenseModal()">&times;</span>
@@ -2313,7 +2322,18 @@
             </div>
             ${isReprint ? `<div style="text-align: center; font-weight: bold; font-size: 16px; margin-top: 5px;">BẢN SAO</div><div style="text-align:center; font-size:11px; margin-top:3px;">Thời gian in lại: ${new Date().toLocaleString('vi-VN')}</div>` : ''}
             <h3 style="text-align: center; text-transform: uppercase; font-size: 14px; margin-top: 10px;">Phiếu kiểm toán bắt buộc phải được lưu trữ không hủy bỏ dưới mọi hình thức</h3>
-        </div>
+            
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #000; text-align: center; -webkit-print-color-adjust: exact;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <img src="https://lh3.googleusercontent.com/d/17dh-SYcmGxXsFiFOvZihF8PgsM3vHEEV" alt="[LOGO]" style="height: 60px; display: inline-block;"> 
+                    <span style="font-size: 14px; font-weight: bold; color: #000;">Copyright © 2026 Thiên Trường Software. All rights reserved.</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 11px; color: #000;">
+                    Established March 22, 2026 | Saigon, Vietnam | https://lehonganthien61633-lgtm.github.io/kiemtoan/<br>
+                    <span style="font-style: italic;">Bản quyền thuộc về Thiên Trường Software</span>
+                </div>
+            </div>
+            </div>
         `;
 
         printArea.innerHTML = printContent;
