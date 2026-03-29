@@ -511,8 +511,19 @@
             <label>Ngân hàng (VNĐ):</label>
             <input type="text" id="input-ngan-hang" value="0">
         </div>
+        
+        <h3 style="text-align: center; font-size: 16px; margin-top: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Thu Nhập Dự Kiến</h3>
+        <div class="form-group">
+            <label>Tiền mặt (VNĐ):</label>
+            <input type="text" id="input-thu-nhap-tm" value="0">
+        </div>
+        <div class="form-group">
+            <label>Ngân hàng (VNĐ):</label>
+            <input type="text" id="input-thu-nhap-nh" value="0">
+        </div>
+
         <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
-            <label>Tổng số dư hiện tại:</label>
+            <label>Tổng quỹ chi tiêu tuần này:</label>
             <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
         </div>
 
@@ -896,9 +907,11 @@
                     if (data.allWeeksData) allWeeksData = data.allWeeksData;
                     if (data.sampleExpenses) sampleExpenses = data.sampleExpenses;
                     if (data.printHistory) printHistory = data.printHistory;
-                    if (data.banGiao) {
+                   if (data.banGiao) {
                         document.getElementById('input-tien-mat').value = data.banGiao.tienMat || 0;
                         document.getElementById('input-ngan-hang').value = data.banGiao.nganHang || 0;
+                        document.getElementById('input-thu-nhap-tm').value = data.banGiao.thuNhapTM || 0;
+                        document.getElementById('input-thu-nhap-nh').value = data.banGiao.thuNhapNH || 0;
                         tinhTongBanGiao();
                     }
                 }
@@ -921,7 +934,9 @@
             printHistory: printHistory,
             banGiao: {
                 tienMat: document.getElementById('input-tien-mat').value,
-                nganHang: document.getElementById('input-ngan-hang').value
+                nganHang: document.getElementById('input-ngan-hang').value,
+                thuNhapTM: document.getElementById('input-thu-nhap-tm').value,
+                thuNhapNH: document.getElementById('input-thu-nhap-nh').value
             }
         };
         try {
@@ -1061,15 +1076,23 @@
         input.value = val;
     }
 
-    const inputTienMat = document.getElementById("input-tien-mat");
+ const inputTienMat = document.getElementById("input-tien-mat");
     const inputNganHang = document.getElementById("input-ngan-hang");
+    const inputThuNhapTM = document.getElementById("input-thu-nhap-tm");
+    const inputThuNhapNH = document.getElementById("input-thu-nhap-nh");
+    
     function tinhTongBanGiao() {
         const tm = parseFloat(inputTienMat.value.replace(/,/g, '')) || 0;
         const nh = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
-        document.getElementById("hien-thi-tong-ban-giao").textContent = formatVND(tm + nh);
+        const tntm = parseFloat(inputThuNhapTM.value.replace(/,/g, '')) || 0;
+        const tnnh = parseFloat(inputThuNhapNH.value.replace(/,/g, '')) || 0;
+        document.getElementById("hien-thi-tong-ban-giao").textContent = formatVND(tm + nh + tntm + tnnh);
     }
+    
     inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
     inputNganHang.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
+    inputThuNhapTM.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
+    inputThuNhapNH.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
 
     const inputTuNgay = document.getElementById("input-tu-ngay");
     const inputTuan = document.getElementById("input-tuan");
@@ -2061,7 +2084,12 @@
 
         let tienMat = parseFloat(document.getElementById("input-tien-mat").value.replace(/,/g, '')) || 0;
         let nganHang = parseFloat(document.getElementById("input-ngan-hang").value.replace(/,/g, '')) || 0;
+        let thuNhapTM = parseFloat(document.getElementById("input-thu-nhap-tm").value.replace(/,/g, '')) || 0;
+        let thuNhapNH = parseFloat(document.getElementById("input-thu-nhap-nh").value.replace(/,/g, '')) || 0;
+        
         let tongSoDu = formatVND(tienMat + nganHang);
+        let tongThuNhap = formatVND(thuNhapTM + thuNhapNH);
+        let tongQuy = formatVND(tienMat + nganHang + thuNhapTM + thuNhapNH);
 
         let now = new Date();
         let weekKey = getWeekKey(tuNgayObj);
@@ -2250,7 +2278,9 @@
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 15px;">
                 <div style="flex: 1;">
                     <span style="font-weight:bold;">Bàn giao tuần trước:</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;+ Số dư: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold;">${tongSoDu}</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Số dư: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold;">${tongSoDu}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Thu nhập dự kiến: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold;">${tongThuNhap}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Tổng quỹ: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; color:#d32f2f;">${tongQuy}</span>
                 </div>
                 <div style="flex: 1; text-align: right; line-height: 1.5;">
                     <span style="font-weight:bold;">Tuần: ${tuan}</span><br>
