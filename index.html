@@ -522,8 +522,13 @@
             <input type="text" id="input-thu-nhap-nh" value="0">
         </div>
 
+        <div class="form-group" style="border-top: 1px dashed #ccc; padding-top: 15px; margin-top: 15px;">
+            <label>Tổng thu dự kiến:</label>
+            <span id="hien-thi-tong-thu-nhap" class="total-display" style="color: #27ae60;">0 đ</span>
+        </div>
+
         <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
-            <label>Tổng quỹ chi tiêu tuần này:</label>
+            <label>TỔNG QUỸ CHI TIÊU TUẦN NÀY:</label>
             <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
         </div>
 
@@ -1086,7 +1091,16 @@
         const nh = parseFloat(inputNganHang.value.replace(/,/g, '')) || 0;
         const tntm = parseFloat(inputThuNhapTM.value.replace(/,/g, '')) || 0;
         const tnnh = parseFloat(inputThuNhapNH.value.replace(/,/g, '')) || 0;
-        document.getElementById("hien-thi-tong-ban-giao").textContent = formatVND(tm + nh + tntm + tnnh);
+        
+        let tongBanGiaoTruoc = tm + nh;
+        let tongThuNhap = tntm + tnnh;
+        
+        // Cập nhật lên tooltip của phần Bàn giao tuần trước (nếu cần)
+        let elementBanGiaoCu = document.getElementById("label-tong-ban-giao-cu");
+        if(elementBanGiaoCu) elementBanGiaoCu.textContent = formatVND(tongBanGiaoTruoc);
+        
+        document.getElementById("hien-thi-tong-thu-nhap").textContent = formatVND(tongThuNhap);
+        document.getElementById("hien-thi-tong-ban-giao").textContent = formatVND(tongBanGiaoTruoc + tongThuNhap);
     }
     
     inputTienMat.addEventListener("input", function() { dinhDangDauPhay(this); tinhTongBanGiao(); scheduleSave(); });
@@ -2276,11 +2290,19 @@
             <h2 style="text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; font-size: 24px; margin-bottom: 25px;">KẾ HOẠCH CHI TIÊU</h2>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 15px;">
-                <div style="flex: 1;">
-                    <span style="font-weight:bold;">Bàn giao tuần trước:</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;+ Số dư: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold;">${tongSoDu}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;+ Thu nhập dự kiến: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold;">${tongThuNhap}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;+ Tổng quỹ: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; color:#d32f2f;">${tongQuy}</span>
+                <div style="flex: 1; line-height: 1.6;">
+                    <span style="font-weight:bold;">1. Bàn giao tuần trước:</span> <span style="font-weight:bold; color:#d32f2f;">${tongSoDu}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Tiền mặt: <span style="display:inline-block; width:100px; text-align:right;">${formatVND(tienMat)}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Ngân hàng: <span style="display:inline-block; width:100px; text-align:right;">${formatVND(nganHang)}</span><br>
+                    
+                    <span style="font-weight:bold; display:inline-block; margin-top:5px;">2. Thu nhập dự kiến:</span> <span style="font-weight:bold; color:#27ae60;">${tongThuNhap}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Tiền mặt: <span style="display:inline-block; width:100px; text-align:right;">${formatVND(thuNhapTM)}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Ngân hàng: <span style="display:inline-block; width:100px; text-align:right;">${formatVND(thuNhapNH)}</span><br>
+                    
+                    <div style="margin-top: 8px; border-top: 1px dashed #ccc; padding-top: 5px; width: 85%;">
+                        <span style="font-weight:bold;">TỔNG QUỸ CHI TIÊU:</span> 
+                        <span style="display:inline-block; width:120px; text-align:right; font-weight:bold; color:#d32f2f; font-size: 16px;">${tongQuy}</span>
+                    </div>
                 </div>
                 <div style="flex: 1; text-align: right; line-height: 1.5;">
                     <span style="font-weight:bold;">Tuần: ${tuan}</span><br>
