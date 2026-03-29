@@ -481,12 +481,12 @@
 
 <div class="navbar">
     <div class="dropdown">
-        <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
         <div id="myDropdown" class="dropdown-content">
             <a onclick="switchModule('module-ban-giao')">Bàn giao tuần trước</a>
             <a onclick="switchModule('module-thoi-gian')">Thời gian</a>
             <div class="dropdown-submenu">
-                <a onclick="switchModule('module-chi-tieu-tuan')">Nội dung chi tuần &raquo;</a>
+                <a onclick="switchModule('module-chi-tieu-tuan')">Nội dung chi tuần »</a>
                 <div class="dropdown-content-sub" id="submenu-days">
                 </div>
             </div>
@@ -537,7 +537,7 @@
         <div style="border-top: 1px solid #000; margin-top: 20px; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;"></div>
 
         <div class="form-group">
-            <label style="font-size: 18px;">Tổng quỹ chi tiêu tuần này:</label>
+            <label style="font-size: 18px;">TỔNG QUỸ CHI TIÊU TUẦN NÀY:</label>
             <span id="hien-thi-tong-quy" class="total-display" style="font-size: 20px;">0 đ</span>
         </div>
 
@@ -561,34 +561,6 @@
         </table>
         <div class="total-display" style="text-align: right; margin-top: 15px; font-size: 18px;">
             Tổng chi dự kiến tuần: <span id="dudinh-tong" style="color: #d32f2f;">0 đ</span>
-        </div>
-    </div>
-
-        <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
-            <label>TỔNG QUỸ CHI TIÊU TUẦN NÀY:</label>
-            <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
-        </div>
-
-        <div style="margin-top: 30px; border-top: 2px solid #000; padding-top: 20px;">
-            <h3 style="text-align: center; text-transform: uppercase; margin-top: 0;">Dự kiến chi của tuần</h3>
-            <table>
-                <thead>
-                    <tr><th>Ăn sáng</th><th>Ăn trưa</th><th>Ăn tối</th><th>Di chuyển</th><th>Tiết kiệm</th><th>Khác</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td id="dudinh-ansang">0 đ</td>
-                        <td id="dudinh-antrua">0 đ</td>
-                        <td id="dudinh-antoi">0 đ</td>
-                        <td id="dudinh-dichuyen">0 đ</td>
-                        <td id="dudinh-tietkiem">0 đ</td>
-                        <td id="dudinh-khac">0 đ</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="total-display" style="text-align: right; margin-top: 10px;">
-                Tổng chi dự kiến tuần: <span id="dudinh-tong" style="color: #d32f2f;">0 đ</span>
-            </div>
         </div>
     </div>
 
@@ -765,7 +737,7 @@
 </div>
 <div id="modal-expense" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeExpenseModal()">&times;</span>
+        <span class="close" onclick="closeExpenseModal()">×</span>
         <h2 class="module-title" id="expense-modal-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Điều chỉnh chi phí</h2>
         <table class="modal-table">
             <thead>
@@ -791,7 +763,7 @@
 
 <div id="modal-select-sample" class="modal" style="z-index: 35;">
     <div class="modal-content">
-        <span class="close" onclick="closeSampleSelectModal()">&times;</span>
+        <span class="close" onclick="closeSampleSelectModal()">×</span>
         <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Chọn Chi Tiêu Mẫu</h2>
         <table class="modal-table">
             <thead>
@@ -811,7 +783,7 @@
 
 <div id="modal-sample" class="modal" style="z-index: 40;">
     <div class="modal-content">
-        <span class="close" onclick="closeSampleModal()">&times;</span>
+        <span class="close" onclick="closeSampleModal()">×</span>
         <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Quản Lý Chi Tiêu Mẫu</h2>
         <table class="modal-table">
             <thead>
@@ -834,7 +806,7 @@
 
 <div id="modal-sample-config" class="modal" style="z-index: 50;">
     <div class="modal-content" style="max-width: 400px; padding: 20px;">
-        <span class="close" onclick="closeSampleConfig()">&times;</span>
+        <span class="close" onclick="closeSampleConfig()">×</span>
         <h2 class="module-title" style="border-bottom:none; margin-bottom:15px; font-size:1.3em;">Danh mục áp dụng</h2>
         <div id="config-toggles-container" style="margin-bottom: 20px;">
             </div>
@@ -844,7 +816,7 @@
 
 <div id="modal-fund-manager" class="modal" style="z-index: 45;">
     <div class="modal-content">
-        <span class="close" onclick="closeFundManager()">&times;</span>
+        <span class="close" onclick="closeFundManager()">×</span>
         <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Quản Lý Quỹ</h2>
         <table class="modal-table">
             <thead>
@@ -866,7 +838,7 @@
 
 <div id="modal-cancel-print" class="modal" style="z-index: 60;">
     <div class="modal-content" style="max-width:400px;">
-        <span class="close" onclick="document.getElementById('modal-cancel-print').style.display='none'">&times;</span>
+        <span class="close" onclick="document.getElementById('modal-cancel-print').style.display='none'">×</span>
         <h2 class="module-title" style="border-bottom:none; margin-bottom:5px; font-size:1.5em;">Xác nhận hủy bản in</h2>
         <div class="form-group" style="display:block;">
             <label style="display:block; margin-bottom: 5px;">Ngày hủy:</label>
@@ -949,7 +921,7 @@
                     if (data.allWeeksData) allWeeksData = data.allWeeksData;
                     if (data.sampleExpenses) sampleExpenses = data.sampleExpenses;
                     if (data.printHistory) printHistory = data.printHistory;
-                   if (data.banGiao) {
+                    if (data.banGiao) {
                         document.getElementById('input-tien-mat').value = data.banGiao.tienMat || 0;
                         document.getElementById('input-ngan-hang').value = data.banGiao.nganHang || 0;
                         document.getElementById('input-thu-nhap-tm').value = data.banGiao.thuNhapTM || 0;
@@ -1118,7 +1090,7 @@
         input.value = val;
     }
 
- const inputTienMat = document.getElementById("input-tien-mat");
+    const inputTienMat = document.getElementById("input-tien-mat");
     const inputNganHang = document.getElementById("input-ngan-hang");
     const inputThuNhapTM = document.getElementById("input-thu-nhap-tm");
     const inputThuNhapNH = document.getElementById("input-thu-nhap-nh");
@@ -2061,7 +2033,9 @@
             funds: allWeeksData[weekKey]?.funds || [],
             notes: allWeeksData[weekKey]?.notesState || {},
             tm: document.getElementById('input-tien-mat').value,
-            nh: document.getElementById('input-ngan-hang').value
+            nh: document.getElementById('input-ngan-hang').value,
+            tntm: document.getElementById('input-thu-nhap-tm').value,
+            tnnh: document.getElementById('input-thu-nhap-nh').value
         });
         
         let pVer = 0;
@@ -2151,6 +2125,18 @@
 
         let daysHtml = '';
         let tongChiTuan = 0;
+
+        // Xây dựng trước bảng tổng hợp Dự kiến chi
+        let globalKehoach = { ansang: 0, antrua: 0, antoi: 0, dichuyen: 0, tietkiem: 0, khac: 0 };
+        daysArr.forEach(day => {
+            catsArr.forEach(cat => {
+                globalKehoach[cat] += expenseData[day][cat].reduce((s, i) => s + (Number(i.total) || 0), 0);
+            });
+        });
+        let globalKehoachCells = '';
+        catsArr.forEach(cat => {
+            globalKehoachCells += `<td style="border: 1px solid #000; padding: 10px; text-align: center;">${globalKehoach[cat] > 0 ? formatVND(globalKehoach[cat]) : '0 đ'}</td>`;
+        });
 
         daysArr.forEach((day, idx) => {
             let dateObj = new Date(tuNgayObj);
@@ -2312,53 +2298,81 @@
                 <div>Cập nhật ngày: 15/03/2026</div>
             </div>
 
-            <div style="border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div>
-                        <div style="font-size: 18px; font-weight:bold;">MSLT: ${tuan}-${pVer}/D01/TTQLDT-VPKHCT</div>
-                        <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
-                    </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div>
+                    <div style="font-size: 18px; font-weight:bold;">MSLT: ${tuan}-${pVer}/D01/TTQLDT-VPKHCT</div>
+                    <div style="margin-top: 5px;">Thời gian in: <span style="margin-left: 20px;">${printTime} | ${printDate}</span></div>
                 </div>
-
-                <div style="display: flex; align-items: flex-start; margin-top: 15px; font-style: italic;">
-                    <div style="flex: 1; line-height: 1.6;">
-                        ${tinhTrangHtml}
-                    </div>
+                <div style="text-align: right; line-height: 1.5; font-size: 15px;">
+                    <span style="font-weight:bold;">Tuần: ${tuan}</span><br>
+                    Tháng: ${thangNam.replace('Tháng ', '').replace(' / Năm 2026', '').split(' |')[0]}/2026<br>
+                    Từ ngày: ${tuNgayStr} đến ngày ${denNgayStr}
                 </div>
             </div>
 
-            <h2 style="text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 2px; font-size: 24px; margin-bottom: 25px;">KẾ HOẠCH CHI TIÊU</h2>
+            <div style="margin-bottom: 15px; font-style: italic; line-height: 1.6; font-size: 15px;">
+                ${tinhTrangHtml}
+            </div>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 15px;">
-                <div style="flex: 1; line-height: 1.6;">
-                    <div style="margin-bottom: 10px;">
-                        <span style="font-weight:bold; text-transform: uppercase;">1. Bàn giao tuần trước:</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;+ Tiền mặt: <span style="display:inline-block; width:120px; text-align:right;">${formatVND(tienMat)}</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;+ Ngân hàng: <span style="display:inline-block; width:120px; text-align:right;">${formatVND(nganHang)}</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;=> Tổng bàn giao: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; color:#2c3e50;">${tongSoDu}</span>
-                    </div>
-                    
-                    <div style="margin-bottom: 10px;">
-                        <span style="font-weight:bold; text-transform: uppercase;">2. Thu nhập dự kiến:</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;+ Tiền mặt: <span style="display:inline-block; width:120px; text-align:right;">${formatVND(thuNhapTM)}</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;+ Ngân hàng: <span style="display:inline-block; width:120px; text-align:right;">${formatVND(thuNhapNH)}</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;=> Tổng dự thu: <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; color:#27ae60;">${tongThuNhap}</span>
-                    </div>
-                    
-                    <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 5px; width: 90%;">
-                        <span style="font-weight:bold; text-transform: uppercase;">TỔNG QUỸ CHI TIÊU:</span> 
-                        <span style="display:inline-block; width:120px; text-align:right; font-weight:bold; color:#d32f2f; font-size: 16px;">${tongQuy}</span>
-                    </div>
-                </div>
-                <div style="flex: 1; text-align: right; line-height: 1.5;">
-                    <span style="font-weight:bold;">Tuần: ${tuan}</span><br>
-                    Tháng: ${thangNam.replace('Tháng ', '').replace(' / Năm 2026', '').split(' |')[0]}/2026<br>
-                    Từ ngày: ${tuNgayStr} đến ngày ${denNgayStr}<br>
-                    <div style="display: flex; justify-content: flex-end; margin-top:5px;">
-                        <span style="margin-right: 10px; font-weight:bold;">Tổng chi tuần dự kiến:</span>
-                        <span style="display:inline-block; width:100px; text-align:right; font-weight:bold; font-size:16px;">${formatVND(tongChiTuan)}</span>
-                    </div>
-                </div>
+            <h3 style="text-align: center; text-transform: uppercase; font-weight: bold; margin-top: 30px; margin-bottom: 15px; font-size: 18px;">BÀN GIAO TUẦN TRƯỚC</h3>
+            <div style="border-top: 2px solid #000; margin-bottom: 20px;"></div>
+
+            <table style="width: 100%; max-width: 600px; margin: 0 auto; border: none; font-size: 16px;">
+                <tr>
+                    <td style="text-align: left; font-weight: bold; border: none; padding: 10px 0; width: 40%;">Tiền mặt (VNĐ):</td>
+                    <td style="text-align: right; border: none; padding: 10px 0;"><div style="border: 1px solid #777; padding: 8px 10px; width: 200px; display: inline-block; text-align: right; box-sizing: border-box;">${formatVND(tienMat).replace(' đ', '')}</div></td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; font-weight: bold; border: none; padding: 10px 0;">Ngân hàng (VNĐ):</td>
+                    <td style="text-align: right; border: none; padding: 10px 0;"><div style="border: 1px solid #777; padding: 8px 10px; width: 200px; display: inline-block; text-align: right; box-sizing: border-box;">${formatVND(nganHang).replace(' đ', '')}</div></td>
+                </tr>
+            </table>
+
+            <div style="text-align: center; font-weight: bold; margin: 20px 0 15px 0; font-size: 16px;">Thu Nhập Dự Kiến</div>
+            <div style="border-top: 1px dotted #ccc; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;"></div>
+
+            <table style="width: 100%; max-width: 600px; margin: 0 auto; border: none; font-size: 16px;">
+                <tr>
+                    <td style="text-align: left; font-weight: bold; border: none; padding: 10px 0; width: 40%;">Tiền mặt (VNĐ):</td>
+                    <td style="text-align: right; border: none; padding: 10px 0;"><div style="border: 1px solid #777; padding: 8px 10px; width: 200px; display: inline-block; text-align: right; box-sizing: border-box;">${formatVND(thuNhapTM).replace(' đ', '')}</div></td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; font-weight: bold; border: none; padding: 10px 0;">Ngân hàng (VNĐ):</td>
+                    <td style="text-align: right; border: none; padding: 10px 0;"><div style="border: 1px solid #777; padding: 8px 10px; width: 200px; display: inline-block; text-align: right; box-sizing: border-box;">${formatVND(thuNhapNH).replace(' đ', '')}</div></td>
+                </tr>
+            </table>
+
+            <div style="border-top: 1px solid #000; margin: 20px 0; max-width: 600px; margin-left: auto; margin-right: auto;"></div>
+
+            <table style="width: 100%; max-width: 600px; margin: 0 auto; border: none; font-size: 18px;">
+                <tr>
+                    <td style="text-align: left; font-weight: bold; border: none; padding: 15px 0;">Tổng quỹ chi tiêu tuần này:</td>
+                    <td style="text-align: right; font-weight: bold; color: #d32f2f; border: none; padding: 15px 0;">${tongQuy}</td>
+                </tr>
+            </table>
+
+            <div style="border-top: 3px solid #000; margin: 30px 0;"></div>
+            
+            <h3 style="text-align: center; text-transform: uppercase; font-weight: bold; margin-bottom: 20px; font-size: 18px;">DỰ KIẾN CHI CỦA TUẦN</h3>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 16px; margin-bottom: 15px; text-align: center;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #000; padding: 10px; background-color: #f9f9f9;">Ăn sáng</th>
+                        <th style="border: 1px solid #000; padding: 10px; background-color: #f9f9f9;">Ăn trưa</th>
+                        <th style="border: 1px solid #000; padding: 10px; background-color: #f9f9f9;">Ăn tối</th>
+                        <th style="border: 1px solid #000; padding: 10px; background-color: #f9f9f9;">Di chuyển</th>
+                        <th style="border: 1px solid #000; padding: 10px; background-color: #f9f9f9;">Tiết kiệm</th>
+                        <th style="border: 1px solid #000; padding: 10px; background-color: #f9f9f9;">Khác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>${globalKehoachCells}</tr>
+                </tbody>
+            </table>
+            
+            <div style="text-align: right; font-weight: bold; font-size: 18px; color: #d32f2f; margin-bottom: 25px;">
+                Tổng chi dự kiến tuần: ${formatVND(tongChiTuan)}
             </div>
 
             ${daysHtml}
