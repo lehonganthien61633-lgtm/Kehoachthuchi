@@ -1996,6 +1996,45 @@
     function executePrint() {
         let printDateStr = document.getElementById('input-in-ngay').value;
         if (!printDateStr) return alert("Vui lòng chọn tuần để in!");
+
+        // --- BẮT ĐẦU: KIỂM TRA BẮT BUỘC ĐIỀN GHI CHÚ ---
+        let missingNotes = [];
+        
+        // 1. Kiểm tra mục Bù đắp
+        if (!document.querySelector('input[name="note-budap"]:checked')) {
+            missingNotes.push("Quyết định bù đắp chi phí");
+        }
+        
+        // 2. Kiểm tra Tùy chọn xử lý tiền dư
+        let submitOpt = document.querySelector('input[name="note-submit"]:checked');
+        if (!submitOpt) {
+            missingNotes.push("Tùy chọn xử lý tiền dư");
+        } else if (submitOpt.value === 'nop') {
+            // Nếu chọn "Nộp", phải kiểm tra tiếp các mục con bên trong
+            let amtOpt = document.querySelector('input[name="note-amount"]:checked');
+            if (!amtOpt) {
+                missingNotes.push("Tích lũy đến (Mức tiền)");
+            } else if (amtOpt.value === 'custom' && document.getElementById('note-custom-amount').value.trim() === '') {
+                missingNotes.push("Số tiền tích lũy (do bạn chọn 'Khác' nhưng chưa nhập số tiền)");
+            }
+            
+            let destOpt = document.querySelector('input[name="note-dest"]:checked');
+            if (!destOpt) {
+                missingNotes.push("Nơi nộp tiền");
+            } else if (destOpt.value === 'stk' && document.getElementById('note-stk-input').value.trim() === '') {
+                missingNotes.push("Tên/Số Sổ Tiết Kiệm nộp tiền");
+            } else if (destOpt.value === 'quy' && document.getElementById('note-quy-select').value === '') {
+                missingNotes.push("Chọn Quỹ để nộp tiền");
+            }
+        }
+        
+        // 3. Nếu có lỗi, chặn in và báo cáo
+        if (missingNotes.length > 0) {
+            alert("KHÔNG THỂ TẠO BẢN IN!\n\nVui lòng vào mục 'Ghi Chú' -> 'Thay đổi nội dung' và hoàn thiện các thiết lập sau:\n\n- " + missingNotes.join("\n- "));
+            return;
+        }
+        // --- KẾT THÚC KIỂM TRA ---
+
         let printMonday = getMonday(new Date(printDateStr));
         
         saveCurrentWeekLocally();
@@ -2022,6 +2061,28 @@
             pVer = allWeeksData[weekKey].printVersion;
         }
 
+        loadWeek(printMonday);
+        
+        setTimeout(() => {
+            let asciiCode = generateASCIICode(12);
+            let now = new Date();
+            let printTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+            let printDate = formatDisplayDate(now);
+            let fullTimeStr = printTime + ' | ' + printDate;
+
+            printHistory.push({
+                timeStr: fullTimeStr,
+                week: getISOWeekNumber(printMonday),
+                dateStr: formatToInputDate(printMonday),
+                asciiCode: asciiCode,
+                pVer: pVer
+            });
+            scheduleSave();
+            renderPrintHistory();
+
+            doPrint(printMonday, asciiCode, printTime, printDate, pVer, false, null);
+        }, 100);
+    }
         loadWeek(printMonday);
         
         setTimeout(() => {
