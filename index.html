@@ -2329,7 +2329,7 @@
                     ${fundRows.length > 0 ? fundRows : '<tr><td colspan="7" style="border: 1px solid #000; padding: 6px; font-style:italic; color:#666; text-align: center;">Chưa có dữ liệu quỹ nộp trong tuần này.</td></tr>'}
                 </table>
                 <div style="text-align: right; font-weight: bold; margin-top: 5px;">
-                    Tổng hệ số: ${totalFactor}<br>
+                    Tổng hệ số: ${parseFloat(totalFactor.toFixed(2))}<br>
                     Số tiền phải nộp: ${formatVND(totalFundMoney).replace(/\s/g, '')}
                 </div>
             </div>
